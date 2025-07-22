@@ -1192,7 +1192,10 @@
                     const parts = fullPath.split('/');
                     if (parts.length % 2 !== 0) {
                         console.error('Invalid document reference:', fullPath);
-                        return { success: false, error: `Invalid document reference: ${fullPath}` };
+                        return { 
+                            success: false, 
+                            error: `Invalid document reference: ${fullPath}` 
+                        };
                     }
                     const docRef = doc(db, 'teachers', teacherId, ...parts);
                     await setDoc(docRef, data, { merge: true });
@@ -1218,7 +1221,7 @@
                         return { success: false, error: 'No data found' };
                     }
                 } catch (error) {
-                    console.error('Error getting data:', error);
+                    console.error('Error getting ', error);
                     return { success: false, error: error.message };
                 }
             },
