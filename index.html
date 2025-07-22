@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com ">
     <link rel="preconnect" href="https://fonts.gstatic.com " crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href=" https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css ">
     <style>
         * {
             margin: 0;
@@ -23,6 +24,71 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 15px;
+        }
+        /* Sidebar and Layout */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 300px;
+            height: 100%;
+            background-color: #2F3246;
+            color: white;
+            z-index: 1000;
+            transition: right 0.3s ease;
+            overflow-y: auto;
+        }
+        .sidebar.active {
+            right: 0;
+        }
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #444;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .close-sidebar {
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+        .menu-item {
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .menu-item:hover {
+            background-color: #3a3d50;
+        }
+        .menu-item i {
+            width: 20px;
+        }
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+        .main-content {
+            transition: margin-right 0.3s ease;
+        }
+        .menu-toggle {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            margin-left: 10px;
         }
         /* Header Styles */
         header {
@@ -225,14 +291,6 @@
             font-size: 14px;
             border: 1px solid #eee;
             text-align: justify;
-        }
-        /* Hover effects for leader cards */
-        .leader-card .leader-quote {
-            transition: all 0.3s ease;
-        }
-        .leader-card:hover .leader-quote {
-            background-color: #f0f8ff;
-            border-color: #2196F3;
         }
         /* CV Section */
         .certificates-container {
@@ -754,403 +812,417 @@
             }
         }
     </style>
-    <link rel="stylesheet" href=" https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css ">
 </head>
 <body>
-    <!-- Header -->
-    <header>
-        <div class="container">
-            <div class="header-content">
-                <div class="logo-title">
-                    <div class="logo">
-                        <img src="https://salogos.org/wp-content/uploads/2021/11/UntiTtled-1-1300x988.png " alt="شعار وزارة التعليم">
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h3>القائمة</h3>
+            <span class="close-sidebar" id="closeSidebar">&times;</span>
+        </div>
+        <div class="sidebar-menu">
+            <div class="menu-item" data-tab="home"><i class="fas fa-home"></i> الرئيسية</div>
+            <div class="menu-item" data-tab="introduction"><i class="fas fa-book"></i> مقدمة الملف</div>
+            <div class="menu-item" data-tab="leaders"><i class="fas fa-users"></i> كلمات القادة</div>
+            <div class="menu-item" data-tab="cv"><i class="fas fa-id-card"></i> السيرة الذاتية</div>
+            <div class="menu-item" data-tab="performance"><i class="fas fa-chart-line"></i> شواهد الأداء</div>
+            <div class="menu-item" data-tab="followup"><i class="fas fa-clipboard-check"></i> التوثيق والمتابعة</div>
+            <div class="menu-item" data-tab="improvement"><i class="fas fa-lightbulb"></i> خطة التحسين</div>
+        </div>
+    </div>
+    <!-- Overlay -->
+    <div class="overlay" id="overlay"></div>
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <!-- Header -->
+        <header>
+            <div class="container">
+                <div class="header-content">
+                    <div class="header-left-section">
+                        <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+                        <div class="logo-title">
+                            <div class="logo">
+                                <img src="https://salogos.org/wp-content/uploads/2021/11/UntiTtled-1-1300x988.png " alt="شعار وزارة التعليم">
+                            </div>
+                            <h1 class="site-title">ملف شواهد الأداء الوظيفي للمعلم<span id="headerTeacherName"></span></h1>
+                        </div>
                     </div>
-                    <h1 class="site-title">
-                        ملف شواهد الأداء الوظيفي للمعلم<span id="headerTeacherName"></span>
-                    </h1>
+                    <button class="update-btn" id="updateDataBtn">
+                        <i class="fas fa-sync-alt"></i>
+                        تحديث البيانات الأساسية
+                    </button>
+                    <div class="teacher-info" id="teacherInfoHeader"></div>
                 </div>
-                <button class="update-btn" id="updateDataBtn">
-                    <i class="fas fa-sync-alt"></i>
-                    تحديث البيانات الأساسية
+            </div>
+            <div class="header-gradient"></div>
+        </header>
+        <!-- Navigation Tabs -->
+        <div class="tabs">
+            <div class="tab-link active" data-tab="home">الرئيسية</div>
+            <div class="tab-link" data-tab="introduction">مقدمة الملف</div>
+            <div class="tab-link" data-tab="leaders">كلمات القادة</div>
+            <div class="tab-link" data-tab="cv">السيرة الذاتية</div>
+            <div class="tab-link" data-tab="performance">شواهد الأداء</div>
+            <div class="tab-link" data-tab="followup">التوثيق والمتابعة</div>
+            <div class="tab-link" data-tab="improvement">خطة التحسين</div>
+        </div>
+        <div class="container">
+            <!-- Home Tab -->
+            <div class="tab-content active" id="home">
+                <div class="card">
+                    <h2 class="card-title">البيانات الأساسية</h2>
+                    <div id="homeMessage"></div>
+                    <div class="form-group">
+                        <label for="teacherName">اسم المعلم</label>
+                        <input type="text" id="teacherName" class="form-control" placeholder="أدخل اسم المعلم">
+                    </div>
+                    <div class="form-group">
+                        <label for="educationDept">الإدارة التعليمية</label>
+                        <input type="text" id="educationDept" class="form-control" placeholder="أدخل اسم الإدارة التعليمية">
+                    </div>
+                    <div class="form-group">
+                        <label for="schoolName">المدرسة</label>
+                        <input type="text" id="schoolName" class="form-control" placeholder="أدخل اسم المدرسة">
+                    </div>
+                    <div class="form-group">
+                        <label for="academicYear">العام الدراسي</label>
+                        <input type="text" id="academicYear" class="form-control" placeholder="أدخل العام الدراسي">
+                    </div>
+                    <button class="btn" id="saveBasicInfo">
+                        <span class="btn-text">حفظ البيانات</span>
+                        <span class="loading" style="display: none;"></span>
+                    </button>
+                </div>
+            </div>
+            <!-- Introduction Tab -->
+            <div class="tab-content" id="introduction">
+                <div class="card">
+                    <h2 class="card-title">المقدمة العامة</h2>
+                    <div class="intro-content">
+                        <p>إن التعليم هو حجر الأساس في بناء الأمم، ووسيلة فعّالة لتحقيق التنمية المستدامة، وصناعة المستقبل الواعد. وقد أولت المملكة العربية السعودية التعليم اهتمامًا بالغًا، ضمن مستهدفات رؤية المملكة 2030 التي تسعى إلى بناء مجتمع معرفي قادر على المنافسة عالميًا.</p>
+                        <p>ويُعد المعلم أحد أهم عناصر العملية التعليمية، فهو الركيزة الأولى في تشكيل شخصية المتعلم، وصقل مهاراته، وتحقيق نواتج تعلم عالية الجودة.</p>
+                        <p>ويأتي هذا الملف ليُوثق شواهد الأداء الوظيفي للمعلم، ويعكس جهوده المبذولة في أداء رسالته التربوية والتعليمية، ويُبرز ممارساته المهنية المستندة إلى معايير الكفاءة والجودة، سعيًا نحو التحسين المستمر والتميز في الأداء.</p>
+                        <button class="edit-btn" onclick="editContent('generalIntro')"><i class="fas fa-edit"></i> تعديل</button>
+                    </div>
+                    <div class="edit-form" id="generalIntroForm" style="display: none;">
+                        <textarea id="generalIntro" class="form-control" rows="6"></textarea>
+                        <button class="btn" onclick="saveContent('generalIntro')">حفظ</button>
+                        <button class="btn btn-secondary" onclick="cancelEdit('generalIntro')">إلغاء</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2 class="card-title">الرؤية</h2>
+                    <div class="intro-content">
+                        <p>تحقيق تعليم نوعي عالي الجودة، يُسهم في بناء جيل واعٍ ومتمكن، منافس عالميًا، ومؤمن بقيمه الوطنية.</p>
+                        <button class="edit-btn" onclick="editContent('vision')"><i class="fas fa-edit"></i> تعديل</button>
+                    </div>
+                    <div class="edit-form" id="visionForm" style="display: none;">
+                        <textarea id="vision" class="form-control" rows="4"></textarea>
+                        <button class="btn" onclick="saveContent('vision')">حفظ</button>
+                        <button class="btn btn-secondary" onclick="cancelEdit('vision')">إلغاء</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2 class="card-title">الرسالة</h2>
+                    <div class="intro-content">
+                        <p>تقديم تعليم محفّز على الإبداع والتميّز، قائم على معايير مهنية، يعزز من دور المعلم في قيادة التعلم، ويركز على تمكين المتعلم من المهارات والمعارف اللازمة لمواكبة التغيرات العالمية.</p>
+                        <button class="edit-btn" onclick="editContent('mission')"><i class="fas fa-edit"></i> تعديل</button>
+                    </div>
+                    <div class="edit-form" id="missionForm" style="display: none;">
+                        <textarea id="mission" class="form-control" rows="4"></textarea>
+                        <button class="btn" onclick="saveContent('mission')">حفظ</button>
+                        <button class="btn btn-secondary" onclick="cancelEdit('mission')">إلغاء</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2 class="card-title">القيم</h2>
+                    <div class="intro-content">
+                        <ul class="values-list">
+                            <li><strong>المواطنة:</strong> تعزيز الانتماء الوطني والاعتزاز بالهوية السعودية.</li>
+                            <li><strong>الجودة:</strong> الالتزام بمعايير الأداء والتميّز المؤسسي.</li>
+                            <li><strong>المسؤولية:</strong> أداء الواجبات المهنية بأمانة ومصداقية.</li>
+                            <li><strong>الابتكار:</strong> دعم الإبداع وتوظيف الحلول التقنية الحديثة.</li>
+                            <li><strong>التمكين:</strong> بناء القدرات وتطوير الكفاءات التعليمية.</li>
+                            <li><strong>العدالة:</strong> تحقيق المساواة وتكافؤ الفرص التعليمية.</li>
+                        </ul>
+                        <button class="edit-btn" onclick="editContent('values')"><i class="fas fa-edit"></i> تعديل</button>
+                    </div>
+                    <div class="edit-form" id="valuesForm" style="display: none;">
+                        <textarea id="values" class="form-control" rows="6"></textarea>
+                        <button class="btn" onclick="saveContent('values')">حفظ</button>
+                        <button class="btn btn-secondary" onclick="cancelEdit('values')">إلغاء</button>
+                    </div>
+                </div>
+            </div>
+            <!-- Leaders Tab -->
+            <div class="tab-content" id="leaders">
+                <div class="card">
+                    <h2 class="card-title">كلمات قادة التعليم</h2>
+                    <div class="leaders-container">
+                        <div class="leader-card">
+                            <img src="https://i.top4top.io/p_3485a0uv82.jpeg " alt="صورة الملك سلمان" class="leader-img" id="kingImage">
+                            <h3 class="leader-name">خادم الحرمين الشريفين الملك سلمان بن عبدالعزيز آل سعود – حفظه الله</h3>
+                            <div class="leader-quote">
+                                "إن التعليم في السعودية هو الركيزة الأساسية للتنمية، ونحن نولي أبناءنا الطلاب والطالبات جلّ اهتمامنا، ونوفر لهم أفضل سبل التعليم الحديث، فهم عماد المستقبل وأمله."
+                            </div>
+                        </div>
+                        <div class="leader-card">
+                            <img src="https://h.top4top.io/p_3485vnxie0.jpeg " alt="صورة ولي العهد" class="leader-img" id="princeImage">
+                            <h3 class="leader-name">صاحب السمو الملكي الأمير محمد بن سلمان بن عبدالعزيز – ولي العهد رئيس مجلس الوزراء – حفظه الله</h3>
+                            <div class="leader-quote">
+                                "طموحنا أن نبني وطنًا أكثر ازدهارًا، يجد فيه كل مواطن ما يتمناه، ويشارك في بناء مستقبله. ولن يكون ذلك إلا بتعليم رائد يصنع جيلاً واعيًا ومؤهلاً للمنافسة عالميًا."
+                            </div>
+                        </div>
+                        <div class="leader-card">
+                            <img src="https://h.top4top.io/p_34853oi4r1.jpeg " alt="صورة وزير التعليم" class="leader-img" id="ministerImage">
+                            <h3 class="leader-name">معالي وزير التعليم يوسف البنيان</h3>
+                            <div class="leader-quote">
+                                "نسعى في وزارة التعليم إلى تطوير المنظومة التعليمية بما يتماشى مع مستهدفات رؤية 2030، من خلال تمكين المعلم، وتحسين نواتج التعلم، وتوفير بيئة تعليمية محفزة للتميّز والإبداع."
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- CV Tab -->
+            <div class="tab-content" id="cv">
+                <div class="card">
+                    <h2 class="card-title">البيانات الأساسية</h2>
+                    <div id="cvMessage"></div>
+                    <div class="form-group">
+                        <label for="fullName">الاسم الكامل</label>
+                        <input type="text" id="fullName" class="form-control" placeholder="أدخل الاسم الكامل">
+                    </div>
+                    <div class="form-group">
+                        <label for="specialization">التخصص</label>
+                        <input type="text" id="specialization" class="form-control" placeholder="أدخل التخصص">
+                    </div>
+                    <div class="form-group">
+                        <label for="qualification">المؤهل العلمي</label>
+                        <input type="text" id="qualification" class="form-control" placeholder="أدخل المؤهل العلمي">
+                    </div>
+                    <div class="form-group">
+                        <label for="graduationYear">سنة التخرج</label>
+                        <input type="text" id="graduationYear" class="form-control" placeholder="أدخل سنة التخرج">
+                    </div>
+                    <div class="form-group">
+                        <label for="yearsOfExperience">سنوات الخبرة</label>
+                        <input type="number" id="yearsOfExperience" class="form-control" placeholder="أدخل عدد سنوات الخبرة">
+                    </div>
+                    <button class="btn" id="saveCV">
+                        <span class="btn-text">حفظ البيانات</span>
+                        <span class="loading" style="display: none;"></span>
+                    </button>
+                </div>
+                <div class="card">
+                    <h2 class="card-title">الرخصة المهنية</h2>
+                    <div class="certificate-item" style="cursor: pointer; height: 200px;" onclick="document.getElementById('licenseUpload').click();">
+                        <div class="upload-icon" id="licenseUploadIcon">
+                            <i class="fas fa-upload"></i>
+                            <p>اضغط لرفع صورة الرخصة المهنية</p>
+                            <small style="display: block; margin-top: 5px; color: #777; font-size: 12px;">يمكنك رفع صور بصيغة JPG أو PNG أو GIF</small>
+                        </div>
+                        <img id="licensePreview" style="display: none; max-height: 100%; object-fit: contain;">
+                        <input type="file" id="licenseUpload" accept="image/jpeg, image/png, image/gif" style="display: none;">
+                    </div>
+                </div>
+                <div class="card">
+                    <h2 class="card-title">شهادات الشكر والتقدير</h2>
+                    <div class="certificates-container" id="certificatesContainer">
+                        <!-- Certificate upload items will be generated here -->
+                    </div>
+                </div>
+                <div class="card">
+                    <h2 class="card-title">الدورات التدريبية</h2>
+                    <div class="training-courses" id="trainingCourses">
+                        <!-- Training courses will be added here -->
+                    </div>
+                    <button class="add-course-btn" id="addCourseBtn">
+                        <i class="fas fa-plus"></i>
+                        إضافة دورة تدريبية
+                    </button>
+                </div>
+            </div>
+            <!-- Performance Tab -->
+            <div class="tab-content" id="performance">
+                <div id="performanceItems">
+                    <!-- Performance items will be generated here -->
+                </div>
+                <div class="performance-result">
+                    <h3 class="result-title">نتيجة التقييم الذاتي</h3>
+                    <div class="result-score" id="totalScore">0%</div>
+                    <p class="result-description" id="scoreDescription">قم بتقييم بنود الأداء للحصول على النتيجة</p>
+                </div>
+            </div>
+            <!-- Follow-up Tab -->
+            <div class="tab-content" id="followup">
+                <div class="follow-up-container">
+                    <div class="card">
+                        <h2 class="card-title">المتابعة الأولى</h2>
+                        <div class="form-group">
+                            <label for="firstFollowupDate">تاريخ المتابعة</label>
+                            <input type="date" id="firstFollowupDate" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="firstFollowupNotes">ملاحظات المتابعة</label>
+                            <textarea id="firstFollowupNotes" class="form-control" rows="6"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="firstFollowupName">اسم المتابع</label>
+                            <input type="text" id="firstFollowupName" class="form-control" placeholder="أدخل اسم المتابع">
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h2 class="card-title">المتابعة الثانية</h2>
+                        <div class="form-group">
+                            <label for="secondFollowupDate">تاريخ المتابعة</label>
+                            <input type="date" id="secondFollowupDate" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="secondFollowupNotes">ملاحظات المتابعة</label>
+                            <textarea id="secondFollowupNotes" class="form-control" rows="6"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="secondFollowupName">اسم المتابع</label>
+                            <input type="text" id="secondFollowupName" class="form-control" placeholder="أدخل اسم المتابع">
+                        </div>
+                    </div>
+                </div>
+                <div class="card" style="margin-top: 20px;">
+                    <h2 class="card-title">التوصيات</h2>
+                    <div class="form-group">
+                        <textarea id="recommendations" class="form-control" rows="6"></textarea>
+                    </div>
+                </div>
+                <button class="btn" id="saveFollowup" style="margin-top: 20px;">
+                    <span class="btn-text">حفظ المعلومات</span>
+                    <span class="loading" style="display: none;"></span>
                 </button>
-                <div class="teacher-info" id="teacherInfoHeader">
-                    <!-- Teacher info will be displayed here -->
+            </div>
+            <!-- Improvement Plan Tab -->
+            <div class="tab-content" id="improvement">
+                <div class="card">
+                    <h2 class="card-title">خطة التحسين المقترحة</h2>
+                    <p>بناءً على التقييم الذاتي وملاحظات المتابعة، يمكن وضع خطة تحسين للجوانب التي تحتاج إلى تطوير في الأداء الوظيفي.</p>
+                    <div class="improvement-form">
+                        <div class="form-group">
+                            <label for="improvementArea">مجال التحسين</label>
+                            <select id="improvementArea" class="form-control">
+                                <option value="">اختر مجال التحسين</option>
+                                <option value="أداء الواجبات الوظيفية">أداء الواجبات الوظيفية</option>
+                                <option value="التفاعل مع المجتمع المهني">التفاعل مع المجتمع المهني</option>
+                                <option value="التفاعل مع أولياء الأمور">التفاعل مع أولياء الأمور</option>
+                                <option value="تنويع استراتيجيات التدريس">تنويع استراتيجيات التدريس</option>
+                                <option value="تحسين نتائج المتعلمين">تحسين نتائج المتعلمين</option>
+                                <option value="إعداد وتنفيذ خطة التعلم">إعداد وتنفيذ خطة التعلم</option>
+                                <option value="توظيف التقنيات والوسائل">توظيف التقنيات والوسائل</option>
+                                <option value="تهيئة البيئة التعليمية">تهيئة البيئة التعليمية</option>
+                                <option value="الإدارة الصفية">الإدارة الصفية</option>
+                                <option value="تحليل نتائج المتعلمين">تحليل نتائج المتعلمين</option>
+                                <option value="تنوع أساليب التقويم">تنوع أساليب التقويم</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="improvementPriority">أولوية التحسين</label>
+                            <select id="improvementPriority" class="form-control">
+                                <option value="">اختر الأولوية</option>
+                                <option value="عالية">عالية</option>
+                                <option value="متوسطة">متوسطة</option>
+                                <option value="منخفضة">منخفضة</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="improvementGoal">هدف التحسين</label>
+                            <input type="text" id="improvementGoal" class="form-control" placeholder="أدخل هدف التحسين">
+                        </div>
+                        <div class="form-group">
+                            <label for="improvementActions">الإجراءات المقترحة</label>
+                            <textarea id="improvementActions" class="form-control" rows="4"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="improvementStartDate">تاريخ البداية</label>
+                            <input type="date" id="improvementStartDate" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="improvementEndDate">تاريخ النهاية</label>
+                            <input type="date" id="improvementEndDate" class="form-control">
+                        </div>
+                        <button class="btn" id="addImprovementBtn">إضافة خطة تحسين</button>
+                    </div>
+                    <div class="improvement-items" id="improvementItems">
+                        <!-- Improvement items will be added here -->
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="header-gradient"></div>
-    </header>
-    <!-- Navigation Tabs -->
-    <div class="tabs">
-        <div class="tab-link active" data-tab="home">الرئيسية</div>
-        <div class="tab-link" data-tab="introduction">مقدمة الملف</div>
-        <div class="tab-link" data-tab="leaders">كلمات القادة</div>
-        <div class="tab-link" data-tab="cv">السيرة الذاتية</div>
-        <div class="tab-link" data-tab="performance">شواهد الأداء</div>
-        <div class="tab-link" data-tab="followup">التوثيق والمتابعة</div>
-        <div class="tab-link" data-tab="improvement">خطة التحسين</div>
-    </div>
-    <div class="container">
-        <!-- Home Tab -->
-        <div class="tab-content active" id="home">
-            <div class="card">
-                <h2 class="card-title">البيانات الأساسية</h2>
-                <div id="homeMessage"></div>
+        <!-- Update Data Modal -->
+        <div class="modal" id="updateDataModal">
+            <div class="modal-content">
+                <span class="close-modal" id="closeUpdateModal">&times;</span>
+                <h3 class="modal-title">تحديث البيانات الأساسية</h3>
+                <div id="modalMessage"></div>
                 <div class="form-group">
-                    <label for="teacherName">اسم المعلم</label>
-                    <input type="text" id="teacherName" class="form-control" placeholder="أدخل اسم المعلم">
+                    <label for="modalTeacherName">اسم المعلم</label>
+                    <input type="text" id="modalTeacherName" class="form-control" placeholder="أدخل اسم المعلم">
                 </div>
                 <div class="form-group">
-                    <label for="educationDept">الإدارة التعليمية</label>
-                    <input type="text" id="educationDept" class="form-control" placeholder="أدخل اسم الإدارة التعليمية">
+                    <label for="modalEducationDept">الإدارة التعليمية</label>
+                    <input type="text" id="modalEducationDept" class="form-control" placeholder="أدخل اسم الإدارة التعليمية">
                 </div>
                 <div class="form-group">
-                    <label for="schoolName">المدرسة</label>
-                    <input type="text" id="schoolName" class="form-control" placeholder="أدخل اسم المدرسة">
+                    <label for="modalSchoolName">المدرسة</label>
+                    <input type="text" id="modalSchoolName" class="form-control" placeholder="أدخل اسم المدرسة">
                 </div>
                 <div class="form-group">
-                    <label for="academicYear">العام الدراسي</label>
-                    <input type="text" id="academicYear" class="form-control" placeholder="أدخل العام الدراسي">
+                    <label for="modalAcademicYear">العام الدراسي</label>
+                    <input type="text" id="modalAcademicYear" class="form-control" placeholder="أدخل العام الدراسي">
                 </div>
-                <button class="btn" id="saveBasicInfo">
+                <button class="btn" id="saveModalData">
                     <span class="btn-text">حفظ البيانات</span>
                     <span class="loading" style="display: none;"></span>
                 </button>
             </div>
         </div>
-        <!-- Introduction Tab -->
-        <div class="tab-content" id="introduction">
-            <div class="card">
-                <h2 class="card-title">المقدمة العامة</h2>
-                <div class="intro-content">
-                    <p>إن التعليم هو حجر الأساس في بناء الأمم، ووسيلة فعّالة لتحقيق التنمية المستدامة، وصناعة المستقبل الواعد. وقد أولت المملكة العربية السعودية التعليم اهتمامًا بالغًا، ضمن مستهدفات رؤية المملكة 2030 التي تسعى إلى بناء مجتمع معرفي قادر على المنافسة عالميًا.</p>
-                    <p>ويُعد المعلم أحد أهم عناصر العملية التعليمية، فهو الركيزة الأولى في تشكيل شخصية المتعلم، وصقل مهاراته، وتحقيق نواتج تعلم عالية الجودة.</p>
-                    <p>ويأتي هذا الملف ليُوثق شواهد الأداء الوظيفي للمعلم، ويعكس جهوده المبذولة في أداء رسالته التربوية والتعليمية، ويُبرز ممارساته المهنية المستندة إلى معايير الكفاءة والجودة، سعيًا نحو التحسين المستمر والتميز في الأداء.</p>
-                    <button class="edit-btn" onclick="editContent('generalIntro')"><i class="fas fa-edit"></i> تعديل</button>
+        <!-- Note Modal -->
+        <div class="modal" id="noteModal">
+            <div class="modal-content">
+                <span class="close-modal" id="closeNoteModal">&times;</span>
+                <h3 class="modal-title">إضافة ملاحظة</h3>
+                <div class="form-group">
+                    <textarea id="noteText" class="form-control" rows="6" placeholder="أدخل ملاحظتك هنا..."></textarea>
                 </div>
-                <div class="edit-form" id="generalIntroForm" style="display: none;">
-                    <textarea id="generalIntro" class="form-control" rows="6" placeholder="أدخل المقدمة العامة عن الموقع وأهدافه هنا...">إن التعليم هو حجر الأساس في بناء الأمم، ووسيلة فعّالة لتحقيق التنمية المستدامة، وصناعة المستقبل الواعد. وقد أولت المملكة العربية السعودية التعليم اهتمامًا بالغًا، ضمن مستهدفات رؤية المملكة 2030 التي تسعى إلى بناء مجتمع معرفي قادر على المنافسة عالميًا.
-ويُعد المعلم أحد أهم عناصر العملية التعليمية، فهو الركيزة الأولى في تشكيل شخصية المتعلم، وصقل مهاراته، وتحقيق نواتج تعلم عالية الجودة.
-ويأتي هذا الملف ليُوثق شواهد الأداء الوظيفي للمعلم، ويعكس جهوده المبذولة في أداء رسالته التربوية والتعليمية، ويُبرز ممارساته المهنية المستندة إلى معايير الكفاءة والجودة، سعيًا نحو التحسين المستمر والتميز في الأداء.</textarea>
-                    <button class="btn" onclick="saveContent('generalIntro')">حفظ</button>
-                    <button class="btn btn-secondary" onclick="cancelEdit('generalIntro')">إلغاء</button>
-                </div>
-            </div>
-            <div class="card">
-                <h2 class="card-title">الرؤية</h2>
-                <div class="intro-content">
-                    <p>تحقيق تعليم نوعي عالي الجودة، يُسهم في بناء جيل واعٍ ومتمكن، منافس عالميًا، ومؤمن بقيمه الوطنية.</p>
-                    <button class="edit-btn" onclick="editContent('vision')"><i class="fas fa-edit"></i> تعديل</button>
-                </div>
-                <div class="edit-form" id="visionForm" style="display: none;">
-                    <textarea id="vision" class="form-control" rows="4" placeholder="أدخل نص الرؤية هنا...">تحقيق تعليم نوعي عالي الجودة، يُسهم في بناء جيل واعٍ ومتمكن، منافس عالميًا، ومؤمن بقيمه الوطنية.</textarea>
-                    <button class="btn" onclick="saveContent('vision')">حفظ</button>
-                    <button class="btn btn-secondary" onclick="cancelEdit('vision')">إلغاء</button>
-                </div>
-            </div>
-            <div class="card">
-                <h2 class="card-title">الرسالة</h2>
-                <div class="intro-content">
-                    <p>تقديم تعليم محفّز على الإبداع والتميّز، قائم على معايير مهنية، يعزز من دور المعلم في قيادة التعلم، ويركز على تمكين المتعلم من المهارات والمعارف اللازمة لمواكبة التغيرات العالمية.</p>
-                    <button class="edit-btn" onclick="editContent('mission')"><i class="fas fa-edit"></i> تعديل</button>
-                </div>
-                <div class="edit-form" id="missionForm" style="display: none;">
-                    <textarea id="mission" class="form-control" rows="4" placeholder="أدخل نص الرسالة هنا...">تقديم تعليم محفّز على الإبداع والتميّز، قائم على معايير مهنية، يعزز من دور المعلم في قيادة التعلم، ويركز على تمكين المتعلم من المهارات والمعارف اللازمة لمواكبة التغيرات العالمية.</textarea>
-                    <button class="btn" onclick="saveContent('mission')">حفظ</button>
-                    <button class="btn btn-secondary" onclick="cancelEdit('mission')">إلغاء</button>
-                </div>
-            </div>
-            <div class="card">
-                <h2 class="card-title">القيم</h2>
-                <div class="intro-content">
-                    <ul class="values-list">
-                        <li><strong>المواطنة:</strong> تعزيز الانتماء الوطني والاعتزاز بالهوية السعودية.</li>
-                        <li><strong>الجودة:</strong> الالتزام بمعايير الأداء والتميّز المؤسسي.</li>
-                        <li><strong>المسؤولية:</strong> أداء الواجبات المهنية بأمانة ومصداقية.</li>
-                        <li><strong>الابتكار:</strong> دعم الإبداع وتوظيف الحلول التقنية الحديثة.</li>
-                        <li><strong>التمكين:</strong> بناء القدرات وتطوير الكفاءات التعليمية.</li>
-                        <li><strong>العدالة:</strong> تحقيق المساواة وتكافؤ الفرص التعليمية.</li>
-                    </ul>
-                    <button class="edit-btn" onclick="editContent('values')"><i class="fas fa-edit"></i> تعديل</button>
-                </div>
-                <div class="edit-form" id="valuesForm" style="display: none;">
-                    <textarea id="values" class="form-control" rows="6" placeholder="أدخل القيم هنا...">	•	المواطنة: تعزيز الانتماء الوطني والاعتزاز بالهوية السعودية.
-    •	الجودة: الالتزام بمعايير الأداء والتميّز المؤسسي.
-    •	المسؤولية: أداء الواجبات المهنية بأمانة ومصداقية.
-    •	الابتكار: دعم الإبداع وتوظيف الحلول التقنية الحديثة.
-    •	التمكين: بناء القدرات وتطوير الكفاءات التعليمية.
-    •	العدالة: تحقيق المساواة وتكافؤ الفرص التعليمية</textarea>
-                    <button class="btn" onclick="saveContent('values')">حفظ</button>
-                    <button class="btn btn-secondary" onclick="cancelEdit('values')">إلغاء</button>
-                </div>
+                <button class="btn" id="saveNote">حفظ الملاحظة</button>
             </div>
         </div>
-        <!-- Leaders Tab -->
-        <div class="tab-content" id="leaders">
-            <div class="card">
-                <h2 class="card-title">كلمات قادة التعليم</h2>
-                <div class="leaders-container">
-                    <div class="leader-card">
-                        <img src="https://i.top4top.io/p_3485a0uv82.jpeg " alt="صورة الملك سلمان" class="leader-img" id="kingImage">
-                        <h3 class="leader-name">خادم الحرمين الشريفين الملك سلمان بن عبدالعزيز آل سعود – حفظه الله</h3>
-                        <div class="leader-quote">
-                            "إن التعليم في السعودية هو الركيزة الأساسية للتنمية، ونحن نولي أبناءنا الطلاب والطالبات جلّ اهتمامنا، ونوفر لهم أفضل سبل التعليم الحديث، فهم عماد المستقبل وأمله."
-                        </div>
-                    </div>
-                    <div class="leader-card">
-                        <img src="https://h.top4top.io/p_3485vnxie0.jpeg " alt="صورة ولي العهد" class="leader-img" id="princeImage">
-                        <h3 class="leader-name">صاحب السمو الملكي الأمير محمد بن سلمان بن عبدالعزيز – ولي العهد رئيس مجلس الوزراء – حفظه الله</h3>
-                        <div class="leader-quote">
-                            "طموحنا أن نبني وطنًا أكثر ازدهارًا، يجد فيه كل مواطن ما يتمناه، ويشارك في بناء مستقبله. ولن يكون ذلك إلا بتعليم رائد يصنع جيلاً واعيًا ومؤهلاً للمنافسة عالميًا."
-                        </div>
-                    </div>
-                    <div class="leader-card">
-                        <img src="https://h.top4top.io/p_34853oi4r1.jpeg " alt="صورة وزير التعليم" class="leader-img" id="ministerImage">
-                        <h3 class="leader-name">معالي وزير التعليم يوسف البنيان</h3>
-                        <div class="leader-quote">
-                            "نسعى في وزارة التعليم إلى تطوير المنظومة التعليمية بما يتماشى مع مستهدفات رؤية 2030، من خلال تمكين المعلم، وتحسين نواتج التعلم، وتوفير بيئة تعليمية محفزة للتميّز والإبداع."
-                        </div>
-                    </div>
-                </div>
+        <!-- Preview Modal -->
+        <div class="preview-modal" id="previewModal">
+            <div class="preview-content">
+                <span class="close-preview" id="closePreview">&times;</span>
+                <div id="previewContainer"></div>
             </div>
         </div>
-        <!-- CV Tab -->
-        <div class="tab-content" id="cv">
-            <div class="card">
-                <h2 class="card-title">البيانات الأساسية</h2>
-                <div id="cvMessage"></div>
-                <div class="form-group">
-                    <label for="fullName">الاسم الكامل</label>
-                    <input type="text" id="fullName" class="form-control" placeholder="أدخل الاسم الكامل">
-                </div>
-                <div class="form-group">
-                    <label for="specialization">التخصص</label>
-                    <input type="text" id="specialization" class="form-control" placeholder="أدخل التخصص">
-                </div>
-                <div class="form-group">
-                    <label for="qualification">المؤهل العلمي</label>
-                    <input type="text" id="qualification" class="form-control" placeholder="أدخل المؤهل العلمي">
-                </div>
-                <div class="form-group">
-                    <label for="graduationYear">سنة التخرج</label>
-                    <input type="text" id="graduationYear" class="form-control" placeholder="أدخل سنة التخرج">
-                </div>
-                <div class="form-group">
-                    <label for="yearsOfExperience">سنوات الخبرة</label>
-                    <input type="number" id="yearsOfExperience" class="form-control" placeholder="أدخل عدد سنوات الخبرة">
-                </div>
-                <button class="btn" id="saveCV">
-                    <span class="btn-text">حفظ البيانات</span>
-                    <span class="loading" style="display: none;"></span>
-                </button>
-            </div>
-            <div class="card">
-                <h2 class="card-title">الرخصة المهنية</h2>
-                <div class="certificate-item" style="cursor: pointer; height: 200px;" onclick="document.getElementById('licenseUpload').click();">
-                    <div class="upload-icon" id="licenseUploadIcon">
-                        <i class="fas fa-upload"></i>
-                        <p>اضغط لرفع صورة الرخصة المهنية</p>
-                        <small style="display: block; margin-top: 5px; color: #777; font-size: 12px;">يمكنك رفع صور بصيغة JPG أو PNG أو GIF</small>
+        <!-- Footer -->
+        <footer>
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-text">جميع الحقوق محفوظة لقناة</div>
+                    <div class="footer-logo">
+                        <img src="https://h.top4top.io/p_3453yqc3h0.png " alt="شعار رسم">
                     </div>
-                    <img id="licensePreview" style="display: none; max-height: 100%; object-fit: contain;">
-                    <input type="file" id="licenseUpload" accept="image/jpeg, image/png, image/gif" style="display: none;">
-                </div>
-            </div>
-            <div class="card">
-                <h2 class="card-title">شهادات الشكر والتقدير</h2>
-                <div class="certificates-container" id="certificatesContainer">
-                    <!-- Certificate upload items will be generated here -->
-                </div>
-            </div>
-            <div class="card">
-                <h2 class="card-title">الدورات التدريبية</h2>
-                <div class="training-courses" id="trainingCourses">
-                    <!-- Training courses will be added here -->
-                </div>
-                <button class="add-course-btn" id="addCourseBtn">
-                    <i class="fas fa-plus"></i>
-                    إضافة دورة تدريبية
-                </button>
-            </div>
-        </div>
-        <!-- Performance Tab -->
-        <div class="tab-content" id="performance">
-            <div id="performanceItems">
-                <!-- Performance items will be generated here -->
-            </div>
-            <div class="performance-result">
-                <h3 class="result-title">نتيجة التقييم الذاتي</h3>
-                <div class="result-score" id="totalScore">0%</div>
-                <p class="result-description" id="scoreDescription">قم بتقييم بنود الأداء للحصول على النتيجة</p>
-            </div>
-        </div>
-        <!-- Follow-up Tab -->
-        <div class="tab-content" id="followup">
-            <div class="follow-up-container">
-                <div class="card">
-                    <h2 class="card-title">المتابعة الأولى</h2>
-                    <div class="form-group">
-                        <label for="firstFollowupDate">تاريخ المتابعة</label>
-                        <input type="date" id="firstFollowupDate" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label for="firstFollowupNotes">ملاحظات المتابعة</label>
-                        <textarea id="firstFollowupNotes" class="form-control" rows="6" placeholder="أدخل ملاحظات المتابعة الأولى هنا..."></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="firstFollowupName">اسم المتابع</label>
-                        <input type="text" id="firstFollowupName" class="form-control" placeholder="أدخل اسم المتابع">
-                    </div>
-                </div>
-                <div class="card">
-                    <h2 class="card-title">المتابعة الثانية</h2>
-                    <div class="form-group">
-                        <label for="secondFollowupDate">تاريخ المتابعة</label>
-                        <input type="date" id="secondFollowupDate" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label for="secondFollowupNotes">ملاحظات المتابعة</label>
-                        <textarea id="secondFollowupNotes" class="form-control" rows="6" placeholder="أدخل ملاحظات المتابعة الثانية هنا..."></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="secondFollowupName">اسم المتابع</label>
-                        <input type="text" id="secondFollowupName" class="form-control" placeholder="أدخل اسم المتابع">
+                    <div class="footer-text">
+                        <a href="https://t.me/Rasm_MA1 " target="_blank">رسم للتصميم والخدمات التعليمية</a>
                     </div>
                 </div>
             </div>
-            <div class="card" style="margin-top: 20px;">
-                <h2 class="card-title">التوصيات</h2>
-                <div class="form-group">
-                    <textarea id="recommendations" class="form-control" rows="6" placeholder="أدخل التوصيات هنا..."></textarea>
-                </div>
-            </div>
-            <button class="btn" id="saveFollowup" style="margin-top: 20px;">
-                <span class="btn-text">حفظ المعلومات</span>
-                <span class="loading" style="display: none;"></span>
-            </button>
-        </div>
-        <!-- Improvement Plan Tab -->
-        <div class="tab-content" id="improvement">
-            <div class="card">
-                <h2 class="card-title">خطة التحسين المقترحة</h2>
-                <p>بناءً على التقييم الذاتي وملاحظات المتابعة، يمكن وضع خطة تحسين للجوانب التي تحتاج إلى تطوير في الأداء الوظيفي.</p>
-                <div class="improvement-form">
-                    <div class="form-group">
-                        <label for="improvementArea">مجال التحسين</label>
-                        <select id="improvementArea" class="form-control">
-                            <option value="">اختر مجال التحسين</option>
-                            <option value="أداء الواجبات الوظيفية">أداء الواجبات الوظيفية</option>
-                            <option value="التفاعل مع المجتمع المهني">التفاعل مع المجتمع المهني</option>
-                            <option value="التفاعل مع أولياء الأمور">التفاعل مع أولياء الأمور</option>
-                            <option value="تنويع استراتيجيات التدريس">تنويع استراتيجيات التدريس</option>
-                            <option value="تحسين نتائج المتعلمين">تحسين نتائج المتعلمين</option>
-                            <option value="إعداد وتنفيذ خطة التعلم">إعداد وتنفيذ خطة التعلم</option>
-                            <option value="توظيف التقنيات والوسائل">توظيف التقنيات والوسائل</option>
-                            <option value="تهيئة البيئة التعليمية">تهيئة البيئة التعليمية</option>
-                            <option value="الإدارة الصفية">الإدارة الصفية</option>
-                            <option value="تحليل نتائج المتعلمين">تحليل نتائج المتعلمين</option>
-                            <option value="تنوع أساليب التقويم">تنوع أساليب التقويم</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="improvementPriority">أولوية التحسين</label>
-                        <select id="improvementPriority" class="form-control">
-                            <option value="">اختر الأولوية</option>
-                            <option value="عالية">عالية</option>
-                            <option value="متوسطة">متوسطة</option>
-                            <option value="منخفضة">منخفضة</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="improvementGoal">هدف التحسين</label>
-                        <input type="text" id="improvementGoal" class="form-control" placeholder="أدخل هدف التحسين">
-                    </div>
-                    <div class="form-group">
-                        <label for="improvementActions">الإجراءات المقترحة</label>
-                        <textarea id="improvementActions" class="form-control" rows="4" placeholder="أدخل الإجراءات المقترحة للتحسين"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="improvementStartDate">تاريخ البداية</label>
-                        <input type="date" id="improvementStartDate" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label for="improvementEndDate">تاريخ النهاية</label>
-                        <input type="date" id="improvementEndDate" class="form-control">
-                    </div>
-                    <button class="btn" id="addImprovementBtn">إضافة خطة تحسين</button>
-                </div>
-                <div class="improvement-items" id="improvementItems">
-                    <!-- Improvement items will be added here -->
-                </div>
-            </div>
-        </div>
+        </footer>
     </div>
-    <!-- Update Data Modal -->
-    <div class="modal" id="updateDataModal">
-        <div class="modal-content">
-            <span class="close-modal" id="closeUpdateModal">&times;</span>
-            <h3 class="modal-title">تحديث البيانات الأساسية</h3>
-            <div id="modalMessage"></div>
-            <div class="form-group">
-                <label for="modalTeacherName">اسم المعلم</label>
-                <input type="text" id="modalTeacherName" class="form-control" placeholder="أدخل اسم المعلم">
-            </div>
-            <div class="form-group">
-                <label for="modalEducationDept">الإدارة التعليمية</label>
-                <input type="text" id="modalEducationDept" class="form-control" placeholder="أدخل اسم الإدارة التعليمية">
-            </div>
-            <div class="form-group">
-                <label for="modalSchoolName">المدرسة</label>
-                <input type="text" id="modalSchoolName" class="form-control" placeholder="أدخل اسم المدرسة">
-            </div>
-            <div class="form-group">
-                <label for="modalAcademicYear">العام الدراسي</label>
-                <input type="text" id="modalAcademicYear" class="form-control" placeholder="أدخل العام الدراسي">
-            </div>
-            <button class="btn" id="saveModalData">
-                <span class="btn-text">حفظ البيانات</span>
-                <span class="loading" style="display: none;"></span>
-            </button>
-        </div>
-    </div>
-    <!-- Note Modal -->
-    <div class="modal" id="noteModal">
-        <div class="modal-content">
-            <span class="close-modal" id="closeNoteModal">&times;</span>
-            <h3 class="modal-title">إضافة ملاحظة</h3>
-            <div class="form-group">
-                <textarea id="noteText" class="form-control" rows="6" placeholder="أدخل ملاحظتك هنا..."></textarea>
-            </div>
-            <button class="btn" id="saveNote">حفظ الملاحظة</button>
-        </div>
-    </div>
-    <!-- Preview Modal -->
-    <div class="preview-modal" id="previewModal">
-        <div class="preview-content">
-            <span class="close-preview" id="closePreview">&times;</span>
-            <div id="previewContainer"></div>
-        </div>
-    </div>
-    <!-- Footer -->
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-text">جميع الحقوق محفوظة لقناة</div>
-                <div class="footer-logo">
-                    <img src="https://h.top4top.io/p_3453yqc3h0.png " alt="شعار رسم">
-                </div>
-                <div class="footer-text">
-                    <a href="https://t.me/Rasm_MA1 " target="_blank">رسم للتصميم والخدمات التعليمية</a>
-                </div>
-            </div>
-        </div>
-    </footer>
+
     <!-- Firebase SDK -->
     <script type="module">
         // Import Firebase modules
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js ';
         import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, addDoc, updateDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js ';
         import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js ';
+
         // Firebase configuration - استبدل هذه الإعدادات بإعداداتك الخاصة
         const firebaseConfig = {
             apiKey: "your-api-key-here",
@@ -1160,10 +1232,12 @@
             messagingSenderId: "your-sender-id",
             appId: "your-app-id"
         };
+
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const storage = getStorage(app);
+
         // Global variables
         window.db = db;
         window.storage = storage;
@@ -1179,9 +1253,11 @@
         window.uploadBytes = uploadBytes;
         window.getDownloadURL = getDownloadURL;
         window.deleteObject = deleteObject;
+
         // Teacher ID - في التطبيق الحقيقي، سيأتي من نظام المصادقة
         const teacherId = 'teacher_001';
         window.teacherId = teacherId;
+
         // Firebase service functions
         window.FirebaseService = {
             // Save data to Firestore (path like 'basic', 'cv', 'performance/1')
@@ -1201,7 +1277,7 @@
                     await setDoc(docRef, data, { merge: true });
                     return { success: true };
                 } catch (error) {
-                    console.error('Error saving data:', error);
+                    console.error('Error saving ', error);
                     return { success: false, error: error.message };
                 }
             },
@@ -1216,7 +1292,7 @@
                     const docRef = doc(db, 'teachers', teacherId, ...parts);
                     const docSnap = await getDoc(docRef);
                     if (docSnap.exists()) {
-                        return { success: true, data: docSnap.data() };
+                        return { success: true,  docSnap.data() };
                     } else {
                         return { success: false, error: 'No data found' };
                     }
@@ -1270,13 +1346,14 @@
                 const docRef = doc(db, 'teachers', teacherId, ...parts);
                 return onSnapshot(docRef, (doc) => {
                     if (doc.exists()) {
-                        callback({ success: true, data: doc.data() });
+                        callback({ success: true,  doc.data() });
                     } else {
                         callback({ success: false, error: 'No data found' });
                     }
                 });
             }
         };
+
         // Show message function
         window.showMessage = function(elementId, message, type = 'success') {
             const messageElement = document.getElementById(elementId);
@@ -1287,6 +1364,7 @@
                 }, 5000);
             }
         };
+
         // Show loading function
         window.showLoading = function(buttonId, show = true) {
             const button = document.getElementById(buttonId);
@@ -1304,10 +1382,57 @@
                 }
             }
         };
+
         console.log('Firebase initialized successfully');
     </script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Sidebar Toggle
+            const menuToggle = document.getElementById('menuToggle');
+            const closeSidebar = document.getElementById('closeSidebar');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            const menuItems = document.querySelectorAll('.menu-item');
+
+            menuToggle.addEventListener('click', () => {
+                sidebar.classList.add('active');
+                overlay.style.display = 'block';
+            });
+
+            closeSidebar.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                overlay.style.display = 'none';
+            });
+
+            overlay.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                overlay.style.display = 'none';
+            });
+
+            menuItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const tab = item.dataset.tab;
+                    document.querySelectorAll('.tab-link').forEach(link => link.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                    document.querySelector(`.tab-link[data-tab="${tab}"]`).classList.add('active');
+                    document.getElementById(tab).classList.add('active');
+                    sidebar.classList.remove('active');
+                    overlay.style.display = 'none';
+                });
+            });
+
+            // Tab Navigation
+            document.querySelectorAll('.tab-link').forEach(link => {
+                link.addEventListener('click', function() {
+                    const tabId = this.dataset.tab;
+                    document.querySelectorAll('.tab-link').forEach(link => link.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                    this.classList.add('active');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+
             // Initialize performance items
             const performanceData = [
                 { id: 1, title: 'أداء الواجبات الوظيفية', description: 'تنفيذ المهام والواجبات الوظيفية بكفاءة وفعالية', weight: '10%' },
@@ -1322,6 +1447,7 @@
                 { id: 10, title: 'تحليل نتائج المتعلمين', description: 'تحليل نتائج المتعلمين واستخدامها في تحسين العملية التعليمية', weight: '10%' },
                 { id: 11, title: 'تنوع أساليب التقويم', description: 'استخدام أساليب تقويم متنوعة لقياس تقدم المتعلمين', weight: '10%' }
             ];
+
             // Generate performance items
             const performanceItemsContainer = document.getElementById('performanceItems');
             performanceData.forEach(item => {
@@ -1397,19 +1523,6 @@
                 certificatesContainer.appendChild(certificateItem);
             }
 
-            // Tab Navigation
-            const tabLinks = document.querySelectorAll('.tab-link');
-            const tabContents = document.querySelectorAll('.tab-content');
-            tabLinks.forEach(link => {
-                link.addEventListener('click', function() {
-                    const tabId = this.dataset.tab;
-                    tabLinks.forEach(link => link.classList.remove('active'));
-                    tabContents.forEach(content => content.classList.remove('active'));
-                    this.classList.add('active');
-                    document.getElementById(tabId).classList.add('active');
-                });
-            });
-
             // Update Data Modal
             const updateDataBtn = document.getElementById('updateDataBtn');
             const updateDataModal = document.getElementById('updateDataModal');
@@ -1426,12 +1539,6 @@
                         document.getElementById('modalSchoolName').value = data.school || '';
                         document.getElementById('modalAcademicYear').value = data.year || '';
                     }
-                } else {
-                    const teacherData = JSON.parse(localStorage.getItem('teacherData') || '{}');
-                    document.getElementById('modalTeacherName').value = teacherData.name || '';
-                    document.getElementById('modalEducationDept').value = teacherData.department || '';
-                    document.getElementById('modalSchoolName').value = teacherData.school || '';
-                    document.getElementById('modalAcademicYear').value = teacherData.year || '';
                 }
                 updateDataModal.style.display = 'flex';
             });
@@ -1463,15 +1570,6 @@
                     } else {
                         showMessage('modalMessage', 'حدث خطأ أثناء الحفظ: ' + result.error, 'error');
                     }
-                } else {
-                    localStorage.setItem('teacherData', JSON.stringify(teacherData));
-                    updateTeacherInfo(teacherData);
-                    showMessage('modalMessage', 'تم تحديث البيانات بنجاح!', 'success');
-                    document.getElementById('teacherName').value = teacherData.name;
-                    document.getElementById('educationDept').value = teacherData.department;
-                    document.getElementById('schoolName').value = teacherData.school;
-                    document.getElementById('academicYear').value = teacherData.year;
-                    setTimeout(() => updateDataModal.style.display = 'none', 2000);
                 }
                 showLoading('saveModalData', false);
             });
@@ -1496,10 +1594,6 @@
                     } else {
                         showMessage('homeMessage', 'حدث خطأ أثناء الحفظ: ' + result.error, 'error');
                     }
-                } else {
-                    localStorage.setItem('teacherData', JSON.stringify(teacherData));
-                    updateTeacherInfo(teacherData);
-                    showMessage('homeMessage', 'تم حفظ البيانات بنجاح!', 'success');
                 }
                 showLoading('saveBasicInfo', false);
             });
@@ -1537,13 +1631,6 @@
                         document.getElementById('schoolName').value = data.school || '';
                         document.getElementById('academicYear').value = data.year || '';
                     }
-                } else {
-                    const teacherData = JSON.parse(localStorage.getItem('teacherData') || '{}');
-                    updateTeacherInfo(teacherData);
-                    document.getElementById('teacherName').value = teacherData.name || '';
-                    document.getElementById('educationDept').value = teacherData.department || '';
-                    document.getElementById('schoolName').value = teacherData.school || '';
-                    document.getElementById('academicYear').value = teacherData.year || '';
                 }
             }
             loadTeacherInfo();
@@ -1571,13 +1658,9 @@
                     } else {
                         alert('حدث خطأ أثناء الحفظ: ' + result.error);
                     }
-                } else {
-                    const introData = JSON.parse(localStorage.getItem('introductionData') || '{}');
-                    introData[contentId] = content;
-                    localStorage.setItem('introductionData', JSON.stringify(introData));
-                    updateContentDisplay(contentId, content, contentElement, form);
-                    alert('تم حفظ المحتوى بنجاح!');
                 }
+                form.style.display = 'none';
+                contentElement.style.display = 'block';
             };
 
             function updateContentDisplay(contentId, content, contentElement, form) {
@@ -1634,12 +1717,6 @@
                         document.getElementById('values').value = data.values || '	•	المواطنة: تعزيز الانتماء الوطني والاعتزاز بالهوية السعودية.\n	•	الجودة: الالتزام بمعايير الأداء والتميّز المؤسسي.\n	•	المسؤولية: أداء الواجبات المهنية بأمانة ومصداقية.\n	•	الابتكار: دعم الإبداع وتوظيف الحلول التقنية الحديثة.\n	•	التمكين: بناء القدرات وتطوير الكفاءات التعليمية.\n	•	العدالة: تحقيق المساواة وتكافؤ الفرص التعليمية';
                         document.getElementById('generalIntro').value = data.generalIntro || 'إن التعليم هو حجر الأساس في بناء الأمم، ووسيلة فعّالة لتحقيق التنمية المستدامة، وصناعة المستقبل الواعد. وقد أولت المملكة العربية السعودية التعليم اهتمامًا بالغًا، ضمن مستهدفات رؤية المملكة 2030 التي تسعى إلى بناء مجتمع معرفي قادر على المنافسة عالميًا.\nويُعد المعلم أحد أهم عناصر العملية التعليمية، فهو الركيزة الأولى في تشكيل شخصية المتعلم، وصقل مهاراته، وتحقيق نواتج تعلم عالية الجودة.\nويأتي هذا الملف ليُوثق شواهد الأداء الوظيفي للمعلم، ويعكس جهوده المبذولة في أداء رسالته التربوية والتعليمية، ويُبرز ممارساته المهنية المستندة إلى معايير الكفاءة والجودة، سعيًا نحو التحسين المستمر والتميز في الأداء.';
                     }
-                } else {
-                    const introData = JSON.parse(localStorage.getItem('introductionData') || '{}');
-                    document.getElementById('vision').value = introData.vision || 'تحقيق تعليم نوعي عالي الجودة، يُسهم في بناء جيل واعٍ ومتمكن، منافس عالميًا، ومؤمن بقيمه الوطنية.';
-                    document.getElementById('mission').value = introData.mission || 'تقديم تعليم محفّز على الإبداع والتميّز، قائم على معايير مهنية، يعزز من دور المعلم في قيادة التعلم، ويركز على تمكين المتعلم من المهارات والمعارف اللازمة لمواكبة التغيرات العالمية.';
-                    document.getElementById('values').value = introData.values || '	•	المواطنة: تعزيز الانتماء الوطني والاعتزاز بالهوية السعودية.\n	•	الجودة: الالتزام بمعايير الأداء والتميّز المؤسسي.\n	•	المسؤولية: أداء الواجبات المهنية بأمانة ومصداقية.\n	•	الابتكار: دعم الإبداع وتوظيف الحلول التقنية الحديثة.\n	•	التمكين: بناء القدرات وتطوير الكفاءات التعليمية.\n	•	العدالة: تحقيق المساواة وتكافؤ الفرص التعليمية';
-                    document.getElementById('generalIntro').value = introData.generalIntro || 'إن التعليم هو حجر الأساس في بناء الأمم، ووسيلة فعّالة لتحقيق التنمية المستدامة، وصناعة المستقبل الواعد. وقد أولت المملكة العربية السعودية التعليم اهتمامًا بالغًا، ضمن مستهدفات رؤية المملكة 2030 التي تسعى إلى بناء مجتمع معرفي قادر على المنافسة عالميًا.\nويُعد المعلم أحد أهم عناصر العملية التعليمية، فهو الركيزة الأولى في تشكيل شخصية المتعلم، وصقل مهاراته، وتحقيق نواتج تعلم عالية الجودة.\nويأتي هذا الملف ليُوثق شواهد الأداء الوظيفي للمعلم، ويعكس جهوده المبذولة في أداء رسالته التربوية والتعليمية، ويُبرز ممارساته المهنية المستندة إلى معايير الكفاءة والجودة، سعيًا نحو التحسين المستمر والتميز في الأداء.';
                 }
             }
             loadIntroductionData();
@@ -1721,9 +1798,6 @@
                     } else {
                         showMessage('cvMessage', 'حدث خطأ أثناء الحفظ: ' + result.error, 'error');
                     }
-                } else {
-                    localStorage.setItem('cvData', JSON.stringify(cvData));
-                    showMessage('cvMessage', 'تم حفظ المعلومات بنجاح!', 'success');
                 }
                 showLoading('saveCV', false);
             });
@@ -1740,13 +1814,6 @@
                         document.getElementById('graduationYear').value = data.graduationYear || '';
                         document.getElementById('yearsOfExperience').value = data.yearsOfExperience || '';
                     }
-                } else {
-                    const cvData = JSON.parse(localStorage.getItem('cvData') || '{}');
-                    document.getElementById('fullName').value = cvData.fullName || '';
-                    document.getElementById('specialization').value = cvData.specialization || '';
-                    document.getElementById('qualification').value = cvData.qualification || '';
-                    document.getElementById('graduationYear').value = cvData.graduationYear || '';
-                    document.getElementById('yearsOfExperience').value = cvData.yearsOfExperience || '';
                 }
             }
             loadCVData();
@@ -1825,8 +1892,6 @@
                 });
                 if (window.FirebaseService) {
                     await window.FirebaseService.saveData('cv/courses', { courses });
-                } else {
-                    localStorage.setItem('courses', JSON.stringify(courses));
                 }
             }
 
