@@ -106,6 +106,11 @@
             align-items: center;
             justify-content: space-between;
         }
+        .header-left-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
         .logo-title {
             display: flex;
             align-items: center;
@@ -758,58 +763,24 @@
         .footer-text a:hover {
             text-decoration: underline;
         }
-        /* Success/Error Messages */
-        .message {
-            padding: 10px 15px;
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 25px;
             border-radius: 5px;
-            margin: 10px 0;
-            font-weight: 600;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.5s ease;
         }
-        .message.success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .message.error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        /* Loading Spinner */
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #2196F3;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        /* Responsive Styles */
-        @media (max-width: 768px) {
-            .header-content {
-                flex-direction: column;
-                gap: 15px;
-            }
-            .teacher-info {
-                text-align: center;
-                margin-top: 10px;
-            }
-            .tab-link {
-                padding: 10px;
-                font-size: 14px;
-            }
-            .leaders-container {
-                flex-direction: column;
-                align-items: center;
-            }
-            .leader-card {
-                width: 100%;
-            }
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
         }
     </style>
 </head>
@@ -817,18 +788,18 @@
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <h3>القائمة</h3>
+            <h3>ملف شواهد الأداء</h3>
             <span class="close-sidebar" id="closeSidebar">&times;</span>
         </div>
-        <div class="sidebar-menu">
-            <div class="menu-item" data-tab="home"><i class="fas fa-home"></i> الرئيسية</div>
-            <div class="menu-item" data-tab="introduction"><i class="fas fa-book"></i> مقدمة الملف</div>
-            <div class="menu-item" data-tab="leaders"><i class="fas fa-users"></i> كلمات القادة</div>
-            <div class="menu-item" data-tab="cv"><i class="fas fa-id-card"></i> السيرة الذاتية</div>
-            <div class="menu-item" data-tab="performance"><i class="fas fa-chart-line"></i> شواهد الأداء</div>
-            <div class="menu-item" data-tab="followup"><i class="fas fa-clipboard-check"></i> التوثيق والمتابعة</div>
-            <div class="menu-item" data-tab="improvement"><i class="fas fa-lightbulb"></i> خطة التحسين</div>
-        </div>
+        <ul class="sidebar-menu">
+            <li><a href="#" class="tab-link active" data-tab="home"><span class="menu-icon"><i class="fas fa-home"></i></span>الرئيسية</a></li>
+            <li><a href="#" class="tab-link" data-tab="introduction"><span class="menu-icon"><i class="fas fa-info-circle"></i></span>مقدمة الملف</a></li>
+            <li><a href="#" class="tab-link" data-tab="leaders"><span class="menu-icon"><i class="fas fa-user-tie"></i></span>كلمات القادة</a></li>
+            <li><a href="#" class="tab-link" data-tab="cv"><span class="menu-icon"><i class="fas fa-id-card"></i></span>السيرة الذاتية</a></li>
+            <li><a href="#" class="tab-link" data-tab="performance"><span class="menu-icon"><i class="fas fa-chart-line"></i></span>شواهد الأداء</a></li>
+            <li><a href="#" class="tab-link" data-tab="followup"><span class="menu-icon"><i class="fas fa-clipboard-check"></i></span>التوثيق والمتابعة</a></li>
+            <li><a href="#" class="tab-link" data-tab="improvement"><span class="menu-icon"><i class="fas fa-lightbulb"></i></span>خطة التحسين</a></li>
+        </ul>
     </div>
     <!-- Overlay -->
     <div class="overlay" id="overlay"></div>
@@ -851,7 +822,7 @@
                         <i class="fas fa-sync-alt"></i>
                         تحديث البيانات الأساسية
                     </button>
-                    <div class="teacher-info" id="teacherInfoHeader"></div>
+                    <div class="teacher-info" id="teacherInfoHeader"><!-- Teacher info will be displayed here --></div>
                 </div>
             </div>
             <div class="header-gradient"></div>
@@ -871,7 +842,6 @@
             <div class="tab-content active" id="home">
                 <div class="card">
                     <h2 class="card-title">البيانات الأساسية</h2>
-                    <div id="homeMessage"></div>
                     <div class="form-group">
                         <label for="teacherName">اسم المعلم</label>
                         <input type="text" id="teacherName" class="form-control" placeholder="أدخل اسم المعلم">
@@ -888,10 +858,7 @@
                         <label for="academicYear">العام الدراسي</label>
                         <input type="text" id="academicYear" class="form-control" placeholder="أدخل العام الدراسي">
                     </div>
-                    <button class="btn" id="saveBasicInfo">
-                        <span class="btn-text">حفظ البيانات</span>
-                        <span class="loading" style="display: none;"></span>
-                    </button>
+                    <button class="btn" id="saveBasicInfo">حفظ البيانات</button>
                 </div>
             </div>
             <!-- Introduction Tab -->
@@ -905,7 +872,9 @@
                         <button class="edit-btn" onclick="editContent('generalIntro')"><i class="fas fa-edit"></i> تعديل</button>
                     </div>
                     <div class="edit-form" id="generalIntroForm" style="display: none;">
-                        <textarea id="generalIntro" class="form-control" rows="6"></textarea>
+                        <textarea id="generalIntro" class="form-control" rows="6" placeholder="أدخل المقدمة العامة عن الموقع وأهدافه هنا...">إن التعليم هو حجر الأساس في بناء الأمم، ووسيلة فعّالة لتحقيق التنمية المستدامة، وصناعة المستقبل الواعد. وقد أولت المملكة العربية السعودية التعليم اهتمامًا بالغًا، ضمن مستهدفات رؤية المملكة 2030 التي تسعى إلى بناء مجتمع معرفي قادر على المنافسة عالميًا.
+ويُعد المعلم أحد أهم عناصر العملية التعليمية، فهو الركيزة الأولى في تشكيل شخصية المتعلم، وصقل مهاراته، وتحقيق نواتج تعلم عالية الجودة.
+ويأتي هذا الملف ليُوثق شواهد الأداء الوظيفي للمعلم، ويعكس جهوده المبذولة في أداء رسالته التربوية والتعليمية، ويُبرز ممارساته المهنية المستندة إلى معايير الكفاءة والجودة، سعيًا نحو التحسين المستمر والتميز في الأداء.</textarea>
                         <button class="btn" onclick="saveContent('generalIntro')">حفظ</button>
                         <button class="btn btn-secondary" onclick="cancelEdit('generalIntro')">إلغاء</button>
                     </div>
@@ -917,7 +886,7 @@
                         <button class="edit-btn" onclick="editContent('vision')"><i class="fas fa-edit"></i> تعديل</button>
                     </div>
                     <div class="edit-form" id="visionForm" style="display: none;">
-                        <textarea id="vision" class="form-control" rows="4"></textarea>
+                        <textarea id="vision" class="form-control" rows="4" placeholder="أدخل نص الرؤية هنا...">تحقيق تعليم نوعي عالي الجودة، يُسهم في بناء جيل واعٍ ومتمكن، منافس عالميًا، ومؤمن بقيمه الوطنية.</textarea>
                         <button class="btn" onclick="saveContent('vision')">حفظ</button>
                         <button class="btn btn-secondary" onclick="cancelEdit('vision')">إلغاء</button>
                     </div>
@@ -929,7 +898,7 @@
                         <button class="edit-btn" onclick="editContent('mission')"><i class="fas fa-edit"></i> تعديل</button>
                     </div>
                     <div class="edit-form" id="missionForm" style="display: none;">
-                        <textarea id="mission" class="form-control" rows="4"></textarea>
+                        <textarea id="mission" class="form-control" rows="4" placeholder="أدخل نص الرسالة هنا...">تقديم تعليم محفّز على الإبداع والتميّز، قائم على معايير مهنية، يعزز من دور المعلم في قيادة التعلم، ويركز على تمكين المتعلم من المهارات والمعارف اللازمة لمواكبة التغيرات العالمية.</textarea>
                         <button class="btn" onclick="saveContent('mission')">حفظ</button>
                         <button class="btn btn-secondary" onclick="cancelEdit('mission')">إلغاء</button>
                     </div>
@@ -948,7 +917,12 @@
                         <button class="edit-btn" onclick="editContent('values')"><i class="fas fa-edit"></i> تعديل</button>
                     </div>
                     <div class="edit-form" id="valuesForm" style="display: none;">
-                        <textarea id="values" class="form-control" rows="6"></textarea>
+                        <textarea id="values" class="form-control" rows="6" placeholder="أدخل القيم هنا...">	•	المواطنة: تعزيز الانتماء الوطني والاعتزاز بالهوية السعودية.
+    •	الجودة: الالتزام بمعايير الأداء والتميّز المؤسسي.
+    •	المسؤولية: أداء الواجبات المهنية بأمانة ومصداقية.
+    •	الابتكار: دعم الإبداع وتوظيف الحلول التقنية الحديثة.
+    •	التمكين: بناء القدرات وتطوير الكفاءات التعليمية.
+    •	العدالة: تحقيق المساواة وتكافؤ الفرص التعليمية</textarea>
                         <button class="btn" onclick="saveContent('values')">حفظ</button>
                         <button class="btn btn-secondary" onclick="cancelEdit('values')">إلغاء</button>
                     </div>
@@ -987,7 +961,6 @@
             <div class="tab-content" id="cv">
                 <div class="card">
                     <h2 class="card-title">البيانات الأساسية</h2>
-                    <div id="cvMessage"></div>
                     <div class="form-group">
                         <label for="fullName">الاسم الكامل</label>
                         <input type="text" id="fullName" class="form-control" placeholder="أدخل الاسم الكامل">
@@ -1008,10 +981,7 @@
                         <label for="yearsOfExperience">سنوات الخبرة</label>
                         <input type="number" id="yearsOfExperience" class="form-control" placeholder="أدخل عدد سنوات الخبرة">
                     </div>
-                    <button class="btn" id="saveCV">
-                        <span class="btn-text">حفظ البيانات</span>
-                        <span class="loading" style="display: none;"></span>
-                    </button>
+                    <button class="btn" id="saveCV">حفظ البيانات</button>
                 </div>
                 <div class="card">
                     <h2 class="card-title">الرخصة المهنية</h2>
@@ -1064,7 +1034,7 @@
                         </div>
                         <div class="form-group">
                             <label for="firstFollowupNotes">ملاحظات المتابعة</label>
-                            <textarea id="firstFollowupNotes" class="form-control" rows="6"></textarea>
+                            <textarea id="firstFollowupNotes" class="form-control" rows="6" placeholder="أدخل ملاحظات المتابعة الأولى هنا..."></textarea>
                         </div>
                         <div class="form-group">
                             <label for="firstFollowupName">اسم المتابع</label>
@@ -1079,7 +1049,7 @@
                         </div>
                         <div class="form-group">
                             <label for="secondFollowupNotes">ملاحظات المتابعة</label>
-                            <textarea id="secondFollowupNotes" class="form-control" rows="6"></textarea>
+                            <textarea id="secondFollowupNotes" class="form-control" rows="6" placeholder="أدخل ملاحظات المتابعة الثانية هنا..."></textarea>
                         </div>
                         <div class="form-group">
                             <label for="secondFollowupName">اسم المتابع</label>
@@ -1090,13 +1060,10 @@
                 <div class="card" style="margin-top: 20px;">
                     <h2 class="card-title">التوصيات</h2>
                     <div class="form-group">
-                        <textarea id="recommendations" class="form-control" rows="6"></textarea>
+                        <textarea id="recommendations" class="form-control" rows="6" placeholder="أدخل التوصيات هنا..."></textarea>
                     </div>
                 </div>
-                <button class="btn" id="saveFollowup" style="margin-top: 20px;">
-                    <span class="btn-text">حفظ المعلومات</span>
-                    <span class="loading" style="display: none;"></span>
-                </button>
+                <button class="btn" id="saveFollowup" style="margin-top: 20px;">حفظ المعلومات</button>
             </div>
             <!-- Improvement Plan Tab -->
             <div class="tab-content" id="improvement">
@@ -1136,7 +1103,7 @@
                         </div>
                         <div class="form-group">
                             <label for="improvementActions">الإجراءات المقترحة</label>
-                            <textarea id="improvementActions" class="form-control" rows="4"></textarea>
+                            <textarea id="improvementActions" class="form-control" rows="4" placeholder="أدخل الإجراءات المقترحة للتحسين"></textarea>
                         </div>
                         <div class="form-group">
                             <label for="improvementStartDate">تاريخ البداية</label>
@@ -1159,7 +1126,6 @@
             <div class="modal-content">
                 <span class="close-modal" id="closeUpdateModal">&times;</span>
                 <h3 class="modal-title">تحديث البيانات الأساسية</h3>
-                <div id="modalMessage"></div>
                 <div class="form-group">
                     <label for="modalTeacherName">اسم المعلم</label>
                     <input type="text" id="modalTeacherName" class="form-control" placeholder="أدخل اسم المعلم">
@@ -1176,10 +1142,7 @@
                     <label for="modalAcademicYear">العام الدراسي</label>
                     <input type="text" id="modalAcademicYear" class="form-control" placeholder="أدخل العام الدراسي">
                 </div>
-                <button class="btn" id="saveModalData">
-                    <span class="btn-text">حفظ البيانات</span>
-                    <span class="loading" style="display: none;"></span>
-                </button>
+                <button class="btn" id="saveModalData">حفظ البيانات</button>
             </div>
         </div>
         <!-- Note Modal -->
@@ -1200,28 +1163,16 @@
                 <div id="previewContainer"></div>
             </div>
         </div>
-        <!-- Footer -->
-        <footer>
-            <div class="container">
-                <div class="footer-content">
-                    <div class="footer-text">جميع الحقوق محفوظة لقناة</div>
-                    <div class="footer-logo">
-                        <img src="https://h.top4top.io/p_3453yqc3h0.png " alt="شعار رسم">
-                    </div>
-                    <div class="footer-text">
-                        <a href="https://t.me/Rasm_MA1 " target="_blank">رسم للتصميم والخدمات التعليمية</a>
-                    </div>
-                </div>
-            </div>
-        </footer>
+        <!-- Toast Notification -->
+        <div class="toast" id="toast"></div>
     </div>
 
     <!-- Firebase SDK -->
     <script type="module">
         // Import Firebase modules
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js ';
-        import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, addDoc, updateDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js ';
-        import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js ';
+        import { getFirestore, doc, setDoc, getDoc, collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js ';
+        import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js ';
 
         // Firebase configuration - استبدل هذه الإعدادات بإعداداتك الخاصة
         const firebaseConfig = {
@@ -1239,49 +1190,27 @@
         const storage = getStorage(app);
 
         // Global variables
-        window.db = db;
-        window.storage = storage;
-        window.doc = doc;
-        window.setDoc = setDoc;
-        window.getDoc = getDoc;
-        window.onSnapshot = onSnapshot;
-        window.collection = collection;
-        window.addDoc = addDoc;
-        window.updateDoc = updateDoc;
-        window.deleteDoc = deleteDoc;
-        window.ref = ref;
-        window.uploadBytes = uploadBytes;
-        window.getDownloadURL = getDownloadURL;
-        window.deleteObject = deleteObject;
-
-        // Teacher ID - في التطبيق الحقيقي، سيأتي من نظام المصادقة
-        const teacherId = 'teacher_001';
-        window.teacherId = teacherId;
+        const teacherId = 'teacher_001'; // في التطبيق الحقيقي، سيأتي من نظام المصادقة
 
         // Firebase service functions
-        window.FirebaseService = {
-            // Save data to Firestore (path like 'basic', 'cv', 'performance/1')
+        const FirebaseService = {
             async saveData(path, data) {
                 try {
-                    // بناء المسار الصحيح: teachers/teacher_001/data/path
+                    // استخدام 'data' كجزء ثابت للتأكد من عدد أجزاء زوجي
                     const fullPath = `data/${path}`;
                     const parts = fullPath.split('/');
                     if (parts.length % 2 !== 0) {
                         console.error('Invalid document reference:', fullPath);
-                        return { 
-                            success: false, 
-                            error: `Invalid document reference: ${fullPath}` 
-                        };
+                        return { success: false, error: `Invalid document reference: ${fullPath}` };
                     }
                     const docRef = doc(db, 'teachers', teacherId, ...parts);
                     await setDoc(docRef, data, { merge: true });
                     return { success: true };
                 } catch (error) {
-                    console.error('Error saving ', error);
+                    console.error('Error saving data:', error);
                     return { success: false, error: error.message };
                 }
             },
-            // Get data from Firestore
             async getData(path) {
                 try {
                     const fullPath = `data/${path}`;
@@ -1292,103 +1221,44 @@
                     const docRef = doc(db, 'teachers', teacherId, ...parts);
                     const docSnap = await getDoc(docRef);
                     if (docSnap.exists()) {
-                        return { success: true,  docSnap.data() };
+                        return { success: true, data: docSnap.data() };
                     } else {
                         return { success: false, error: 'No data found' };
                     }
                 } catch (error) {
-                    console.error('Error getting ', error);
+                    console.error('Error getting data:', error);
                     return { success: false, error: error.message };
                 }
             },
-            // Save to a collection (like improvement plans)
-            async saveToCollection(collectionPath, data) {
-                try {
-                    const colRef = collection(db, 'teachers', teacherId, 'data', collectionPath);
-                    const docRef = await addDoc(colRef, {
-                        ...data,
-                        createdAt: new Date().toISOString()
-                    });
-                    return { success: true, id: docRef.id };
-                } catch (error) {
-                    console.error('Error saving to collection:', error);
-                    return { success: false, error: error.message };
-                }
-            },
-            // Upload file to Firebase Storage
             async uploadFile(file, path) {
                 try {
                     const storageRef = ref(storage, `${teacherId}/${path}/${Date.now()}_${file.name}`);
                     const snapshot = await uploadBytes(storageRef, file);
                     const downloadURL = await getDownloadURL(snapshot.ref);
-                    return { success: true, url: downloadURL, path: snapshot.ref.fullPath };
+                    return { success: true, url: downloadURL };
                 } catch (error) {
                     console.error('Error uploading file:', error);
                     return { success: false, error: error.message };
                 }
             },
-            // Delete file from Firebase Storage
-            async deleteFile(path) {
+            async saveToCollection(collectionPath, data) {
                 try {
-                    const storageRef = ref(storage, path);
-                    await deleteObject(storageRef);
+                    const colRef = collection(db, 'teachers', teacherId, 'data', collectionPath);
+                    await addDoc(colRef, data);
                     return { success: true };
                 } catch (error) {
-                    console.error('Error deleting file:', error);
+                    console.error('Error saving to collection:', error);
                     return { success: false, error: error.message };
                 }
-            },
-            // Listen to real-time updates
-            subscribeToData(path, callback) {
-                const fullPath = `data/${path}`;
-                const parts = fullPath.split('/');
-                if (parts.length % 2 !== 0) return;
-                const docRef = doc(db, 'teachers', teacherId, ...parts);
-                return onSnapshot(docRef, (doc) => {
-                    if (doc.exists()) {
-                        callback({ success: true,  doc.data() });
-                    } else {
-                        callback({ success: false, error: 'No data found' });
-                    }
-                });
             }
         };
 
-        // Show message function
-        window.showMessage = function(elementId, message, type = 'success') {
-            const messageElement = document.getElementById(elementId);
-            if (messageElement) {
-                messageElement.innerHTML = `<div class="message ${type}">${message}</div>`;
-                setTimeout(() => {
-                    messageElement.innerHTML = '';
-                }, 5000);
-            }
-        };
-
-        // Show loading function
-        window.showLoading = function(buttonId, show = true) {
-            const button = document.getElementById(buttonId);
-            if (button) {
-                const text = button.querySelector('.btn-text');
-                const loading = button.querySelector('.loading');
-                if (show) {
-                    text.style.display = 'none';
-                    loading.style.display = 'inline-block';
-                    button.disabled = true;
-                } else {
-                    text.style.display = 'inline';
-                    loading.style.display = 'none';
-                    button.disabled = false;
-                }
-            }
-        };
-
-        console.log('Firebase initialized successfully');
+        window.FirebaseService = FirebaseService;
     </script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Sidebar Toggle
+            // Sidebar functionality
             const menuToggle = document.getElementById('menuToggle');
             const closeSidebar = document.getElementById('closeSidebar');
             const sidebar = document.getElementById('sidebar');
@@ -1412,7 +1282,7 @@
 
             menuItems.forEach(item => {
                 item.addEventListener('click', () => {
-                    const tab = item.dataset.tab;
+                    const tab = item.querySelector('a').dataset.tab;
                     document.querySelectorAll('.tab-link').forEach(link => link.classList.remove('active'));
                     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
                     document.querySelector(`.tab-link[data-tab="${tab}"]`).classList.add('active');
@@ -1448,7 +1318,6 @@
                 { id: 11, title: 'تنوع أساليب التقويم', description: 'استخدام أساليب تقويم متنوعة لقياس تقدم المتعلمين', weight: '10%' }
             ];
 
-            // Generate performance items
             const performanceItemsContainer = document.getElementById('performanceItems');
             performanceData.forEach(item => {
                 const performanceItem = document.createElement('div');
@@ -1523,80 +1392,15 @@
                 certificatesContainer.appendChild(certificateItem);
             }
 
-            // Update Data Modal
-            const updateDataBtn = document.getElementById('updateDataBtn');
-            const updateDataModal = document.getElementById('updateDataModal');
-            const closeUpdateModal = document.getElementById('closeUpdateModal');
-            const saveModalData = document.getElementById('saveModalData');
-
-            updateDataBtn.addEventListener('click', async function() {
-                if (window.FirebaseService) {
-                    const result = await window.FirebaseService.getData('basic');
-                    if (result.success) {
-                        const data = result.data;
-                        document.getElementById('modalTeacherName').value = data.name || '';
-                        document.getElementById('modalEducationDept').value = data.department || '';
-                        document.getElementById('modalSchoolName').value = data.school || '';
-                        document.getElementById('modalAcademicYear').value = data.year || '';
-                    }
-                }
-                updateDataModal.style.display = 'flex';
-            });
-
-            closeUpdateModal.addEventListener('click', function() {
-                updateDataModal.style.display = 'none';
-            });
-
-            saveModalData.addEventListener('click', async function() {
-                showLoading('saveModalData', true);
-                const teacherData = {
-                    name: document.getElementById('modalTeacherName').value,
-                    department: document.getElementById('modalEducationDept').value,
-                    school: document.getElementById('modalSchoolName').value,
-                    year: document.getElementById('modalAcademicYear').value,
-                    updatedAt: new Date().toISOString()
-                };
-
-                if (window.FirebaseService) {
-                    const result = await window.FirebaseService.saveData('basic', teacherData);
-                    if (result.success) {
-                        showMessage('modalMessage', 'تم تحديث البيانات بنجاح!', 'success');
-                        updateTeacherInfo(teacherData);
-                        document.getElementById('teacherName').value = teacherData.name;
-                        document.getElementById('educationDept').value = teacherData.department;
-                        document.getElementById('schoolName').value = teacherData.school;
-                        document.getElementById('academicYear').value = teacherData.year;
-                        setTimeout(() => updateDataModal.style.display = 'none', 2000);
-                    } else {
-                        showMessage('modalMessage', 'حدث خطأ أثناء الحفظ: ' + result.error, 'error');
-                    }
-                }
-                showLoading('saveModalData', false);
-            });
-
-            // Save Basic Info
-            const saveBasicInfo = document.getElementById('saveBasicInfo');
-            saveBasicInfo.addEventListener('click', async function() {
-                showLoading('saveBasicInfo', true);
-                const teacherData = {
-                    name: document.getElementById('teacherName').value,
-                    department: document.getElementById('educationDept').value,
-                    school: document.getElementById('schoolName').value,
-                    year: document.getElementById('academicYear').value,
-                    updatedAt: new Date().toISOString()
-                };
-
-                if (window.FirebaseService) {
-                    const result = await window.FirebaseService.saveData('basic', teacherData);
-                    if (result.success) {
-                        showMessage('homeMessage', 'تم حفظ البيانات بنجاح!', 'success');
-                        updateTeacherInfo(teacherData);
-                    } else {
-                        showMessage('homeMessage', 'حدث خطأ أثناء الحفظ: ' + result.error, 'error');
-                    }
-                }
-                showLoading('saveBasicInfo', false);
-            });
+            // Show toast notification
+            function showToast(message) {
+                const toast = document.getElementById('toast');
+                toast.textContent = message;
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
 
             // Update teacher info in header
             function updateTeacherInfo(data) {
@@ -1635,6 +1439,77 @@
             }
             loadTeacherInfo();
 
+            // Save Basic Info
+            const saveBasicInfo = document.getElementById('saveBasicInfo');
+            saveBasicInfo.addEventListener('click', async function() {
+                const teacherData = {
+                    name: document.getElementById('teacherName').value,
+                    department: document.getElementById('educationDept').value,
+                    school: document.getElementById('schoolName').value,
+                    year: document.getElementById('academicYear').value,
+                    updatedAt: new Date().toISOString()
+                };
+
+                if (window.FirebaseService) {
+                    const result = await window.FirebaseService.saveData('basic', teacherData);
+                    if (result.success) {
+                        updateTeacherInfo(teacherData);
+                        showToast('تم حفظ البيانات بنجاح!');
+                    } else {
+                        showToast('حدث خطأ أثناء الحفظ: ' + result.error);
+                    }
+                }
+            });
+
+            // Update Data Modal
+            const updateDataBtn = document.getElementById('updateDataBtn');
+            const updateDataModal = document.getElementById('updateDataModal');
+            const closeUpdateModal = document.getElementById('closeUpdateModal');
+            const saveModalData = document.getElementById('saveModalData');
+
+            updateDataBtn.addEventListener('click', async function() {
+                if (window.FirebaseService) {
+                    const result = await window.FirebaseService.getData('basic');
+                    if (result.success) {
+                        const data = result.data;
+                        document.getElementById('modalTeacherName').value = data.name || '';
+                        document.getElementById('modalEducationDept').value = data.department || '';
+                        document.getElementById('modalSchoolName').value = data.school || '';
+                        document.getElementById('modalAcademicYear').value = data.year || '';
+                    }
+                }
+                updateDataModal.style.display = 'flex';
+            });
+
+            closeUpdateModal.addEventListener('click', function() {
+                updateDataModal.style.display = 'none';
+            });
+
+            saveModalData.addEventListener('click', async function() {
+                const teacherData = {
+                    name: document.getElementById('modalTeacherName').value,
+                    department: document.getElementById('modalEducationDept').value,
+                    school: document.getElementById('modalSchoolName').value,
+                    year: document.getElementById('modalAcademicYear').value,
+                    updatedAt: new Date().toISOString()
+                };
+
+                if (window.FirebaseService) {
+                    const result = await window.FirebaseService.saveData('basic', teacherData);
+                    if (result.success) {
+                        updateTeacherInfo(teacherData);
+                        document.getElementById('teacherName').value = teacherData.name;
+                        document.getElementById('educationDept').value = teacherData.department;
+                        document.getElementById('schoolName').value = teacherData.school;
+                        document.getElementById('academicYear').value = teacherData.year;
+                        showToast('تم تحديث البيانات بنجاح!');
+                        setTimeout(() => updateDataModal.style.display = 'none', 2000);
+                    } else {
+                        showToast('حدث خطأ أثناء الحفظ: ' + result.error);
+                    }
+                }
+            });
+
             // Edit content functions
             window.editContent = function(contentId) {
                 document.getElementById(contentId + 'Form').style.display = 'block';
@@ -1654,9 +1529,9 @@
                     const result = await window.FirebaseService.saveData('introduction', introData);
                     if (result.success) {
                         updateContentDisplay(contentId, content, contentElement, form);
-                        alert('تم حفظ المحتوى بنجاح!');
+                        showToast('تم حفظ المحتوى بنجاح!');
                     } else {
-                        alert('حدث خطأ أثناء الحفظ: ' + result.error);
+                        showToast('حدث خطأ أثناء الحفظ: ' + result.error);
                     }
                 }
                 form.style.display = 'none';
@@ -1733,8 +1608,9 @@
                         if (result.success) {
                             document.getElementById('kingImage').src = result.url;
                             await window.FirebaseService.saveData('leaders', { kingImage: result.url });
+                            showToast('تم رفع الصورة بنجاح!');
                         } else {
-                            alert('حدث خطأ أثناء الرفع: ' + result.error);
+                            showToast('حدث خطأ أثناء الرفع: ' + result.error);
                         }
                     }
                 };
@@ -1752,8 +1628,9 @@
                         if (result.success) {
                             document.getElementById('princeImage').src = result.url;
                             await window.FirebaseService.saveData('leaders', { princeImage: result.url });
+                            showToast('تم رفع الصورة بنجاح!');
                         } else {
-                            alert('حدث خطأ أثناء الرفع: ' + result.error);
+                            showToast('حدث خطأ أثناء الرفع: ' + result.error);
                         }
                     }
                 };
@@ -1771,8 +1648,9 @@
                         if (result.success) {
                             document.getElementById('ministerImage').src = result.url;
                             await window.FirebaseService.saveData('leaders', { ministerImage: result.url });
+                            showToast('تم رفع الصورة بنجاح!');
                         } else {
-                            alert('حدث خطأ أثناء الرفع: ' + result.error);
+                            showToast('حدث خطأ أثناء الرفع: ' + result.error);
                         }
                     }
                 };
@@ -1782,7 +1660,6 @@
             // Save CV
             const saveCV = document.getElementById('saveCV');
             saveCV.addEventListener('click', async function() {
-                showLoading('saveCV', true);
                 const cvData = {
                     fullName: document.getElementById('fullName').value,
                     specialization: document.getElementById('specialization').value,
@@ -1791,15 +1668,15 @@
                     yearsOfExperience: document.getElementById('yearsOfExperience').value,
                     updatedAt: new Date().toISOString()
                 };
+
                 if (window.FirebaseService) {
                     const result = await window.FirebaseService.saveData('cv', cvData);
                     if (result.success) {
-                        showMessage('cvMessage', 'تم حفظ المعلومات بنجاح!', 'success');
+                        showToast('تم حفظ المعلومات بنجاح!');
                     } else {
-                        showMessage('cvMessage', 'حدث خطأ أثناء الحفظ: ' + result.error, 'error');
+                        showToast('حدث خطأ أثناء الحفظ: ' + result.error);
                     }
                 }
-                showLoading('saveCV', false);
             });
 
             // Load CV data
@@ -1828,8 +1705,9 @@
                         document.getElementById('licensePreview').style.display = 'block';
                         document.getElementById('licenseUploadIcon').style.display = 'none';
                         await window.FirebaseService.saveData('cv', { licenseImage: result.url });
+                        showToast('تم رفع الصورة بنجاح!');
                     } else {
-                        alert('حدث خطأ أثناء الرفع: ' + result.error);
+                        showToast('حدث خطأ أثناء الرفع: ' + result.error);
                     }
                 }
             });
@@ -1849,8 +1727,9 @@
                             const certData = {};
                             certData[`certificate_${index}`] = result.url;
                             await window.FirebaseService.saveData('cv', certData);
+                            showToast('تم رفع الشهادة بنجاح!');
                         } else {
-                            alert('حدث خطأ أثناء الرفع: ' + result.error);
+                            showToast('حدث خطأ أثناء الرفع: ' + result.error);
                         }
                     }
                 });
@@ -1912,8 +1791,9 @@
                             const evidenceData = {};
                             evidenceData[`evidence_${index}`] = result.url;
                             await window.FirebaseService.saveData(`performance/${performanceId}`, evidenceData);
+                            showToast('تم رفع الشاهد بنجاح!');
                         } else {
-                            alert('حدث خطأ أثناء الرفع: ' + result.error);
+                            showToast('حدث خطأ أثناء الرفع: ' + result.error);
                         }
                     }
                 });
@@ -1979,7 +1859,6 @@
             // Save Follow-up
             const saveFollowup = document.getElementById('saveFollowup');
             saveFollowup.addEventListener('click', async function() {
-                showLoading('saveFollowup', true);
                 const followupData = {
                     firstDate: document.getElementById('firstFollowupDate').value,
                     firstNotes: document.getElementById('firstFollowupNotes').value,
@@ -1990,13 +1869,15 @@
                     recommendations: document.getElementById('recommendations').value,
                     updatedAt: new Date().toISOString()
                 };
-                const result = await window.FirebaseService.saveData('followup', followupData);
-                if (result.success) {
-                    alert('تم الحفظ بنجاح!');
-                } else {
-                    alert('حدث خطأ: ' + result.error);
+
+                if (window.FirebaseService) {
+                    const result = await window.FirebaseService.saveData('followup', followupData);
+                    if (result.success) {
+                        showToast('تم حفظ المعلومات بنجاح!');
+                    } else {
+                        showToast('حدث خطأ أثناء الحفظ: ' + result.error);
+                    }
                 }
-                showLoading('saveFollowup', false);
             });
 
             // Add Improvement Plan
@@ -2011,7 +1892,7 @@
                 const endDate = document.getElementById('improvementEndDate').value;
 
                 if (!area || !priority || !goal || !actions || !startDate || !endDate) {
-                    alert('يرجى ملء جميع الحقول');
+                    showToast('يرجى ملء جميع الحقول');
                     return;
                 }
 
@@ -2019,12 +1900,15 @@
                     area, priority, goal, actions, startDate, endDate, createdAt: new Date().toISOString()
                 };
 
-                const result = await window.FirebaseService.saveToCollection('improvement', improvementData);
-                if (result.success) {
-                    addImprovementItemToDOM(improvementData);
-                    clearImprovementForm();
-                } else {
-                    alert('حدث خطأ أثناء الحفظ: ' + result.error);
+                if (window.FirebaseService) {
+                    const result = await window.FirebaseService.saveToCollection('improvement', improvementData);
+                    if (result.success) {
+                        addImprovementItemToDOM(improvementData);
+                        clearImprovementForm();
+                        showToast('تمت إضافة خطة التحسين بنجاح!');
+                    } else {
+                        showToast('حدث خطأ أثناء الحفظ: ' + result.error);
+                    }
                 }
             });
 
