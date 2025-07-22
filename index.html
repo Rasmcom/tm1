@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ملف شواهد الأداء الوظيفي للمعلم</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* جميع التنسيقات الأصلية كما أرسلتها */
+        /* ... (الكود الخاص بالـ CSS كما هو بدون تغيير) ... */
+    </style>
+    <!-- إضافة مكتبات فايربيز -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+</head>
+<body>
+    <!-- جميع محتوى الصفحة كما هو بدون تغيير -->
+    <!-- ... (الكود الخاص بالـ HTML كما أرسلته) ... -->
+
+    <script>
+        // إعداد الاتصال بفايربيز
+        const firebaseConfig = {
+            databaseURL: "https://testm2-6ffa1-default-rtdb.firebaseio.com/"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // دوال عامة للحفظ والاسترجاع
+        function saveToFirebase(key, data) {
+            return db.ref(key).set(data);
+        }
+        function getFromFirebase(key) {
+            return db.ref(key).once('value').then(snap => snap.val() || {});
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // حفظ البيانات الأساسية
+            document.getElementById('saveBasicInfo').addEventListener('click', function() {
+                const teacherData = {
+                    name: document.getElementById('teacherName').value,
+                    department: document.getElementById('educationDept').value,
+                    school: document.getElementById('schoolName').value,
+                    year: document.getElementById('academicYear').value
+                };
+                saveToFirebase('teacherData', teacherData)
+                    .then(() => {
+                        updateTeacherInfo(teacherData);
+                        alert("تم حفظ البيانات بنجاح في قاعدة البيانات!");
+                    })
+                    .catch((error) => {
+                        alert("حدث خطأ أثناء الحفظ: " + error.message);
+                    });
+            });
+
+            // استرجاع البيانات الأساسية عند تحميل الصفحة
+            getFromFirebase('teacherData').then(teacherData => {
+                updateTeacherInfo(teacherData);
+                document.getElementById('teacherName').value = teacherData.name || '';
+                document.getElementById('educationDept').value = teacherData.department || '';
+                document.getElementById('schoolName').value = teacherData.school || '';
+                document.getElementById('academicYear').value = teacherData.year || '';
+            });
+
+            // دالة تحديث بيانات المعلم في الهيدر
+            function updateTeacherInfo(data) {
+                const teacherInfoHeader = document.getElementById('teacherInfoHeader');
+                const headerTeacherName = document.getElementById('headerTeacherName');
+                if (data.name) {
+                    headerTeacherName.textContent = " " + data.name;
+                } else {
+                    headerTeacherName.textContent = '';
+                }
+                if (data.name || data.department || data.school || data.year) {
+                    teacherInfoHeader.innerHTML = `
+                        <p><strong>المعلم:</strong> ${data.name || 'غير محدد'}</p>
+                        <p><strong>الإدارة:</strong> ${data.department || 'غير محدد'}</p>
+                        <p><strong>المدرسة:</strong> ${data.school || 'غير محدد'}</p>
+                        <p><strong>العام الدراسي:</strong> ${data.year || 'غير محدد'}</p>
+                    `;
+                } else {
+                    teacherInfoHeader.innerHTML = '<p>لم يتم إدخال البيانات بعد</p>';
+                }
+            }
+
+            // المقدمة والرؤية والرسالة والقيم
+            function saveIntro() {
+                const introData = {
+                    vision: document.getElementById('vision').value,
+                    mission: document.getElementById('mission').value,
+                    values: document.getElementById('values').value,
+                    generalIntro: document.getElementById('generalIntro').value
+                };
+                saveToFirebase('introductionData', introData)
+                    .then(() => alert("تم حفظ المقدمة بنجاح!"));
+            }
+            document.getElementById('saveIntroduction')?.addEventListener('click', saveIntro);
+            getFromFirebase('introductionData').then(introData => {
+                document.getElementById('vision').value = introData.vision || '';
+                document.getElementById('mission').value = introData.mission || '';
+                document.getElementById('values').value = introData.values || '';
+                document.getElementById('generalIntro').value = introData.generalIntro || '';
+            });
+
+            // السيرة الذاتية
+            document.getElementById('saveCV').addEventListener('click', function() {
+                const cvData = {
+                    fullName: document.getElementById('fullName').value,
+                    specialization: document.getElementById('specialization').value,
+                    qualification: document.getElementById('qualification').value,
+                    graduationYear: document.getElementById('graduationYear').value,
+                    yearsOfExperience: document.getElementById('yearsOfExperience').value
+                };
+                saveToFirebase('cvData', cvData)
+                    .then(() => alert("تم حفظ السيرة الذاتية بنجاح!"));
+            });
+            getFromFirebase('cvData').then(cvData => {
+                document.getElementById('fullName').value = cvData.fullName || '';
+                document.getElementById('specialization').value = cvData.specialization || '';
+                document.getElementById('qualification').value = cvData.qualification || '';
+                document.getElementById('graduationYear').value = cvData.graduationYear || '';
+                document.getElementById('yearsOfExperience').value = cvData.yearsOfExperience || '';
+            });
+
+            // بيانات المتابعة
+            document.getElementById('saveFollowup').addEventListener('click', function() {
+                const followupData = {
+                    firstDate: document.getElementById('firstFollowupDate').value,
+                    firstNotes: document.getElementById('firstFollowupNotes').value,
+                    firstName: document.getElementById('firstFollowupName').value,
+                    secondDate: document.getElementById('secondFollowupDate').value,
+                    secondNotes: document.getElementById('secondFollowupNotes').value,
+                    secondName: document.getElementById('secondFollowupName').value,
+                    recommendations: document.getElementById('recommendations').value
+                };
+                saveToFirebase('followupData', followupData)
+                    .then(() => alert("تم حفظ بيانات المتابعة بنجاح!"));
+            });
+            getFromFirebase('followupData').then(followupData => {
+                document.getElementById('firstFollowupDate').value = followupData.firstDate || '';
+                document.getElementById('firstFollowupNotes').value = followupData.firstNotes || '';
+                document.getElementById('firstFollowupName').value = followupData.firstName || '';
+                document.getElementById('secondFollowupDate').value = followupData.secondDate || '';
+                document.getElementById('secondFollowupNotes').value = followupData.secondNotes || '';
+                document.getElementById('secondFollowupName').value = followupData.secondName || '';
+                document.getElementById('recommendations').value = followupData.recommendations || '';
+            });
+
+            // خطة التحسين
+            function saveImprovements() {
+                const improvements = [];
+                document.querySelectorAll('.improvement-item').forEach(item => {
+                    const area = item.querySelector('.improvement-area').textContent;
+                    const priority = item.querySelector('.improvement-priority').textContent;
+                    const goalText = item.querySelector('p:nth-child(2)').textContent;
+                    const actionsText = item.querySelector('p:nth-child(3)').textContent;
+                    const periodText = item.querySelector('p:nth-child(4)').textContent;
+                    improvements.push({
+                        area,
+                        priority,
+                        goal: goalText.replace('الهدف:', '').trim(),
+                        actions: actionsText.replace('الإجراءات:', '').trim(),
+                        period: periodText.replace('الفترة:', '').trim()
+                    });
+                });
+                saveToFirebase('improvements', improvements)
+                    .then(() => alert("تم حفظ خطط التحسين بنجاح!"));
+            }
+            // استدعِ saveImprovements بعد كل إضافة أو حذف خطة تحسين
+            // (تأكد من ربطه في الأحداث الخاصة بالإضافة أو الحذف)
+
+            // استرجاع خطط التحسين
+            getFromFirebase('improvements').then(improvements => {
+                // أضف كود لإنشاء العناصر في الصفحة بناءً على improvements
+                // (نفس الطريقة التي كنت تستخدمها من قبل مع localStorage)
+            });
+
+            // أمثلة لحفظ الدورات والشهادات، يمكنك تكرار نفس الأسلوب
+            // الدورات التدريبية
+            function saveCourses() {
+                const courses = [];
+                document.querySelectorAll('.course-item').forEach(item => {
+                    courses.push({
+                        name: item.querySelector('.course-name')?.value || '',
+                        date: item.querySelector('.course-date')?.value || '',
+                        hours: item.querySelector('.course-hours')?.value || ''
+                    });
+                });
+                saveToFirebase('courses', courses)
+                    .then(() => alert("تم حفظ الدورات التدريبية بنجاح!"));
+            }
+            // استدعِ saveCourses بعد كل إضافة أو تعديل دورة تدريبية
+            getFromFirebase('courses').then(courses => {
+                // أضف كود لإنشاء عناصر الدورات في الصفحة بناءً على courses
+            });
+
+            // الشهادات
+            function saveCertificates(certificates) {
+                saveToFirebase('certificates', certificates)
+                    .then(() => alert("تم حفظ الشهادات بنجاح!"));
+            }
+            getFromFirebase('certificates').then(certificates => {
+                // أضف كود لإنشاء عناصر الشهادات في الصفحة بناءً على certificates
+            });
+
+            // شواهد الأداء (تقييمات وملاحظات)
+            function savePerformanceRatings(ratings) {
+                saveToFirebase('performanceRatings', ratings)
+                    .then(() => alert("تم حفظ تقييم الأداء بنجاح!"));
+            }
+            function savePerformanceNotes(notes) {
+                saveToFirebase('performanceNotes', notes)
+                    .then(() => alert("تم حفظ الملاحظات بنجاح!"));
+            }
+            getFromFirebase('performanceRatings').then(ratings => {
+                // أضف كود لتعبئة القيم في الصفحة
+            });
+            getFromFirebase('performanceNotes').then(notes => {
+                // أضف كود لتعبئة الملاحظات في الصفحة
+            });
+
+            // باقي الأكواد الأصلية للصفحة كما هي (الصفحات، التنقل، إلخ)
+            // يمكنك تعميم فكرة الحفظ على أي جزء بنفس الأسلوب
+        });
+    </script>
+</body>
+</html>
