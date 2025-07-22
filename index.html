@@ -1171,7 +1171,7 @@
     <script type="module">
         // Import Firebase modules
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js ';
-        import { getFirestore, doc, setDoc, getDoc, collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js ';
+        import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js ';
         import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js ';
 
         // Firebase configuration - استبدل هذه الإعدادات بإعداداتك الخاصة
@@ -1207,7 +1207,7 @@
                     await setDoc(docRef, data, { merge: true });
                     return { success: true };
                 } catch (error) {
-                    console.error('Error saving data:', error);
+                    console.error('Error saving ', error);
                     return { success: false, error: error.message };
                 }
             },
@@ -1226,7 +1226,7 @@
                         return { success: false, error: 'No data found' };
                     }
                 } catch (error) {
-                    console.error('Error getting data:', error);
+                    console.error('Error getting ', error);
                     return { success: false, error: error.message };
                 }
             },
@@ -1238,16 +1238,6 @@
                     return { success: true, url: downloadURL };
                 } catch (error) {
                     console.error('Error uploading file:', error);
-                    return { success: false, error: error.message };
-                }
-            },
-            async saveToCollection(collectionPath, data) {
-                try {
-                    const colRef = collection(db, 'teachers', teacherId, 'data', collectionPath);
-                    await addDoc(colRef, data);
-                    return { success: true };
-                } catch (error) {
-                    console.error('Error saving to collection:', error);
                     return { success: false, error: error.message };
                 }
             }
@@ -1901,7 +1891,7 @@
                 };
 
                 if (window.FirebaseService) {
-                    const result = await window.FirebaseService.saveToCollection('improvement', improvementData);
+                    const result = await window.FirebaseService.saveData('improvement', improvementData);
                     if (result.success) {
                         addImprovementItemToDOM(improvementData);
                         clearImprovementForm();
